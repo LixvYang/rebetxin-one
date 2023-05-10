@@ -1,0 +1,15 @@
+Name: betxin-api
+Host: 0.0.0.0
+Port: 8888
+
+Auth:
+  AccessSecret: lesafasfasewdpenpnfiw3p
+  AccessExpire: 360000
+
+Mysql:
+  DNS: root:123456@tcp(127.0.0.1:3306)/betxin?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
+
+CacheRedis:
+  - Host: 127.0.0.1:6379
+    Type: node
+
