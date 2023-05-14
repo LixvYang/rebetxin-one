@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -41,9 +42,10 @@ func (l *SigninLogic) Signin(req *types.SigninReq) (resp *types.SigninResp, err 
 	}
 
 	authorizer := auth.New([]string{
-		"fbd26bc6-3d04-4964-a7fe-a540432b16e2",
+		"30aad5a5-e5f3-4824-9409-c2ff4152724e",
 	}, []string{
-		"pando.im",
+		"127.0.0.1:4000",
+		"127.0.0.1:4000/*",
 	})
 
 	switch req.LoginMethod {
@@ -54,8 +56,10 @@ func (l *SigninLogic) Signin(req *types.SigninReq) (resp *types.SigninResp, err 
 			MixinToken: req.MixinToken,
 		})
 		if err != nil {
-			return nil, err
+			fmt.Println("333")
+			return nil, errorx.NewDefaultError("authorizer.Authorize error!")
 		}
+		log.Println("444")
 
 		user := model.User{
 			AvatarUrl:      sql.NullString{String: userInfo.AvatarURL, Valid: true},
@@ -65,12 +69,12 @@ func (l *SigninLogic) Signin(req *types.SigninReq) (resp *types.SigninResp, err 
 			FullName:       sql.NullString{String: userInfo.FullName, Valid: true},
 			Biography:      sql.NullString{String: userInfo.Biography, Valid: true},
 		}
-		fmt.Printf("%+v", user)
-
+		fmt.Println(222)
 		// 3. 查询用户是否已经存在
 		// 3.1 若不存在则创建
 		// 3.2 若存在则更新数据
 		// 创建
+		fmt.Println(333)
 		_, err = l.svcCtx.UserModel.FindOneByUid(l.ctx, user.Uid)
 		if err != nil {
 			if err == model.ErrNotFound {
@@ -78,15 +82,15 @@ func (l *SigninLogic) Signin(req *types.SigninReq) (resp *types.SigninResp, err 
 				_, err = l.svcCtx.UserModel.Insert(l.ctx, &user)
 				if err != nil {
 					logx.Errorw("UserModel.Insert failed", logx.LogField{Key: "err", Value: err.Error()})
-					return nil, err
+					return nil, errorx.NewDefaultError("UserModel.Insert(l.ctx, &user) error")
 				}
 			}
 
 			logx.Errorw("UserModel.FindOneByUid: ", logx.LogField{Key: "Err", Value: err.Error()})
-			return nil, err
+			return nil, errorx.NewDefaultError("UserModel.FindOneByUid error!")
 		} else {
-			// 已经存在
 
+			// 已经存在
 			oUser, err := l.svcCtx.UserModel.FindOneByUid(l.ctx, user.Uid)
 			if err != nil {
 				logx.Errorw("UserModel.FindOneByUid", logx.LogField{Key: "err", Value: err.Error()})

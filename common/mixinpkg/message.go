@@ -1,143 +1,132 @@
 package mixinpkg
 
-import (
-	"context"
-	"encoding/base64"
-	"encoding/json"
-	"flag"
-	"fmt"
-	"log"
+// var text = flag.String("text", "hello world", "text message")
 
-	"github.com/fox-one/mixin-sdk-go"
-)
+// // 连接成功
+// // bet Yes No
+// // 关注社群
+// func SendMessage(receiptID ...string) {
+// 	ctx := context.Background()
 
-var text = flag.String("text", "hello world", "text message")
+// 	me, err := MixinClient.UserMe(ctx)
+// 	if err != nil {
+// 		log.Fatalln(err)
+// 	}
 
-// 连接成功
-// bet Yes No
-// 关注社群
-func SendMessage(receiptID ...string) {
-	ctx := context.Background()
+// 	if me.App == nil {
+// 		log.Fatalln("use a bot keystore instead")
+// 	}
 
-	me, err := MixinClient.UserMe(ctx)
-	if err != nil {
-		log.Fatalln(err)
-	}
+// 	sessions, err := MixinClient.FetchSessions(ctx, receiptID)
+// 	if err != nil {
+// 		log.Fatalln(err)
+// 	}
 
-	if me.App == nil {
-		log.Fatalln("use a bot keystore instead")
-	}
+// 	_ = sessions
 
-	sessions, err := MixinClient.FetchSessions(ctx, receiptID)
-	if err != nil {
-		log.Fatalln(err)
-	}
+// 	var reqs []*mixin.MessageRequest
+// 	for _, rcid := range receiptID {
+// 		req := &mixin.MessageRequest{
+// 			ConversationID: mixin.UniqueConversationID(MixinClient.ClientID, rcid),
+// 			RecipientID:    rcid,
+// 			MessageID:      mixin.RandomTraceID(),
+// 			Category:       mixin.MessageCategoryPlainText,
+// 			Data:           base64.StdEncoding.EncodeToString([]byte(*text)),
+// 		}
+// 		if err := MixinClient.EncryptMessageRequest(req, sessions); err != nil {
+// 			log.Fatalln(err)
+// 		}
+// 		reqs = append(reqs, req)
+// 	}
 
-	_ = sessions
+// 	_, err = MixinClient.SendEncryptedMessages(ctx, reqs)
+// 	if err != nil {
+// 		log.Fatalln(err)
+// 	}
+// }
 
-	var reqs []*mixin.MessageRequest
-	for _, rcid := range receiptID {
-		req := &mixin.MessageRequest{
-			ConversationID: mixin.UniqueConversationID(MixinClient.ClientID, rcid),
-			RecipientID:    rcid,
-			MessageID:      mixin.RandomTraceID(),
-			Category:       mixin.MessageCategoryPlainText,
-			Data:           base64.StdEncoding.EncodeToString([]byte(*text)),
-		}
-		if err := MixinClient.EncryptMessageRequest(req, sessions); err != nil {
-			log.Fatalln(err)
-		}
-		reqs = append(reqs, req)
-	}
+// func SendCard(ctx context.Context, tid, title, intro string, receiptIds ...string) {
+// 	me, err := MixinClient.UserMe(ctx)
+// 	if err != nil {
+// 		log.Fatalln(err)
+// 	}
 
-	_, err = MixinClient.SendEncryptedMessages(ctx, reqs)
-	if err != nil {
-		log.Fatalln(err)
-	}
-}
+// 	if len(intro) > 45 {
+// 		intro = intro[:44] + "..."
+// 	}
+// 	sessions, err := MixinClient.FetchSessions(ctx, receiptIds)
+// 	if err != nil {
+// 		log.Fatalln(err)
+// 	}
 
-func SendCard(ctx context.Context, tid, title, intro string, receiptIds ...string) {
-	me, err := MixinClient.UserMe(ctx)
-	if err != nil {
-		log.Fatalln(err)
-	}
+// 	_ = sessions
 
-	if len(intro) > 45 {
-		intro = intro[:44] + "..."
-	}
-	sessions, err := MixinClient.FetchSessions(ctx, receiptIds)
-	if err != nil {
-		log.Fatalln(err)
-	}
+// 	card := &mixin.AppCardMessage{
+// 		AppID:       MixinClient.ClientID,
+// 		IconURL:     fmt.Sprintf("https://betxin.one/main/topic/%s", tid),
+// 		Title:       "title",
+// 		Description: "intro",
+// 		Action:      "https://mixin.one/messenger",
+// 		Shareable:   true,
+// 	}
 
-	_ = sessions
+// 	cardJSON, err := json.Marshal(card)
+// 	if err != nil {
+// 		return
+// 	}
 
-	card := &mixin.AppCardMessage{
-		AppID:       MixinClient.ClientID,
-		IconURL:     fmt.Sprintf("https://betxin.one/main/topic/%s", tid),
-		Title:       "title",
-		Description: "intro",
-		Action:      "https://mixin.one/messenger",
-		Shareable:   true,
-	}
+// 	cardEncoded := base64.RawStdEncoding.EncodeToString(cardJSON)
 
-	cardJSON, err := json.Marshal(card)
-	if err != nil {
-		return
-	}
+// 	req := &mixin.MessageRequest{
+// 		ConversationID: mixin.UniqueConversationID(MixinClient.ClientID, me.App.CreatorID),
+// 		RecipientID:    me.App.CreatorID,
+// 		MessageID:      mixin.RandomTraceID(),
+// 		Category:       mixin.MessageCategoryAppCard,
+// 		Data:           cardEncoded,
+// 	}
 
-	cardEncoded := base64.RawStdEncoding.EncodeToString(cardJSON)
+// 	if err := MixinClient.EncryptMessageRequest(req, sessions); err != nil {
+// 		log.Fatalln(err)
+// 	}
 
-	req := &mixin.MessageRequest{
-		ConversationID: mixin.UniqueConversationID(MixinClient.ClientID, me.App.CreatorID),
-		RecipientID:    me.App.CreatorID,
-		MessageID:      mixin.RandomTraceID(),
-		Category:       mixin.MessageCategoryAppCard,
-		Data:           cardEncoded,
-	}
+// 	err = MixinClient.EncryptMessageRequest(req, sessions)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 		return
+// 	}
+// }
 
-	if err := MixinClient.EncryptMessageRequest(req, sessions); err != nil {
-		log.Fatalln(err)
-	}
+// func SendButtonGroup(ctx context.Context) {
+// 	me, err := MixinClient.UserMe(ctx)
+// 	if err != nil {
+// 		log.Fatalln(err)
+// 	}
 
-	err = MixinClient.EncryptMessageRequest(req, sessions)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-}
+// 	// bet Yes 100 No
+// 	var buttons mixin.AppButtonGroupMessage
+// 	buttons = append(buttons, mixin.AppButtonMessage{
+// 		Label: "",
+// 		Color: "",
+// 		Action: "",
+// 	})
 
-func SendButtonGroup(ctx context.Context) {
-	me, err := MixinClient.UserMe(ctx)
-	if err != nil {
-		log.Fatalln(err)
-	}
+// 	buttonsJson, err := json.Marshal(buttons)
+// 	if err != nil {
+// 		return
+// 	}
 
-	// bet Yes 100 No
-	var buttons mixin.AppButtonGroupMessage
-	buttons = append(buttons, mixin.AppButtonMessage{
-		Label: "",
-		Color: "",
-		Action: "",
-	})
+// 	cardEncoded := base64.RawStdEncoding.EncodeToString(buttonsJson)
 
-	buttonsJson, err := json.Marshal(buttons)
-	if err != nil {
-		return
-	}
+// 	req := &mixin.MessageRequest{
+// 		ConversationID: mixin.UniqueConversationID(MixinClient.ClientID, me.App.CreatorID),
+// 		RecipientID:    me.App.CreatorID,
+// 		MessageID:      mixin.RandomTraceID(),
+// 		Category:       mixin.MessageCategoryAppCard,
+// 		Data:           cardEncoded,
+// 	}
 
-	cardEncoded := base64.RawStdEncoding.EncodeToString(buttonsJson)
-
-	req := &mixin.MessageRequest{
-		ConversationID: mixin.UniqueConversationID(MixinClient.ClientID, me.App.CreatorID),
-		RecipientID:    me.App.CreatorID,
-		MessageID:      mixin.RandomTraceID(),
-		Category:       mixin.MessageCategoryAppCard,
-		Data:           cardEncoded,
-	}
-
-	err = MixinClient.SendMessage(ctx, req)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
+// 	err = MixinClient.SendMessage(ctx, req)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// }

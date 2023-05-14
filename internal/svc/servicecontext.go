@@ -31,7 +31,8 @@ type ServiceContext struct {
 	TopicCollectModel  model.TopicCollectModel
 	TopicPurchaseModel model.TopicpurchaseModel
 	UserModel          model.UserModel
-	CategoryMap        map[int64]*model.Category
+	SnapshotModel          model.SnapshotModel
+	CategoryMap        map[int64]model.Category
 
 	TopicCollectMap *TopicCollectMap
 }
@@ -47,15 +48,16 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	svc.TopicCollectModel = model.NewTopicCollectModel(conn, c.CacheRedis)
 	svc.TopicPurchaseModel = model.NewTopicpurchaseModel(conn, c.CacheRedis)
 	svc.UserModel = model.NewUserModel(conn, c.CacheRedis)
+	svc.SnapshotModel = model.NewSnapshotModel(conn, c.CacheRedis)
 
-	categoryMap := make(map[int64]*model.Category)
+	categoryMap := make(map[int64]model.Category)
 	categoryList, err := svc.CategoryModel.List(context.Background())
 	if err != nil {
 		logx.Errorw("categoryRPC.ListCategory", logx.LogField{Key: "Error: ", Value: err})
 		panic(err)
 	}
 	for _, cate := range categoryList {
-		categoryMap[cate.Id] = &model.Category{
+		categoryMap[cate.Id] = model.Category{
 			Id:           cate.Id,
 			CategoryName: cate.CategoryName,
 		}
@@ -65,8 +67,9 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		QueryTime:       time.Now().AddDate(0, 0, -1),
 		TopicCollectMap: make(map[string]map[string]bool),
 	}
-	svc.TopicCollectMap = topicCollectMap
 
+	svc.TopicCollectMap = topicCollectMap
+	svc.CategoryMap = categoryMap
 	return svc
 }
 

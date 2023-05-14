@@ -1,0 +1,26 @@
+info(
+	title:
+	desc:
+	author:
+	email: @betxin.one
+	version: 1.0
+)
+
+@server(
+	group: snapshot
+	prefix: /api/v1
+	jwt: Auth
+)
+service betxin-api {
+	@doc(
+		summary: Create
+	)
+	@handler CreateSnapshotHandler
+	post /snapshot (CreateSnapshotReq)
+}
+
+type CreateSnapshotReq {
+	Uid     string `json:"uid"`
+	TraceId string `json:"trace_id"`
+	Tid     string `json:"tid"`
+}

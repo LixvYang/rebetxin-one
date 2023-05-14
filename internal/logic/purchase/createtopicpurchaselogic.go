@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/lixvyang/rebetxin-one/internal/svc"
+	"github.com/lixvyang/rebetxin-one/internal/types"
+
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -21,8 +23,19 @@ func NewCreateTopicPurchaseLogic(ctx context.Context, svcCtx *svc.ServiceContext
 	}
 }
 
-func (l *CreateTopicPurchaseLogic) CreateTopicPurchase() error {
-	// todo: add your logic here and delete this line
+// Create
+func (l *CreateTopicPurchaseLogic) CreateTopicPurchase(req *types.CreateTopicPurchaseReq) error {
+	// purchase, err := l.svcCtx.TopicPurchaseModel.FindOneByUidTid(l.ctx, req.Uid, req.Uid)
+	// if err != nil {
+	// 	if err == model.ErrNotFound {
+	// 		logx.Errorf("TopicPurchaseModel.FindOneByUidTid", logx.LogField{Key: "Err", Value: err.Error()})
+	// 		return errorx.NewDefaultError("Not found")
+	// 	}
+	// 	return errorx.NewDefaultError("Not found")
+	// }
+
+	// purchase.
+	// l.svcCtx.TopicPurchaseModel.Update(l.ctx, )
 
 	return nil
 }

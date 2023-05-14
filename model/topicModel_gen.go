@@ -168,7 +168,7 @@ func (m *defaultTopicModel) ListByCid(ctx context.Context, cid int64, preId int6
 	switch err {
 	case nil:
 		return resp, nil
-	case sqlc.ErrNotFound:
+	case sqlx.ErrNotFound:
 		return nil, ErrNotFound
 	default:
 		return nil, err

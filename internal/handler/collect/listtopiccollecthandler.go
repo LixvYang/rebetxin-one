@@ -1,8 +1,9 @@
 package collect
 
 import (
-	"github.com/lixvyang/rebetxin-one/common/errorx"
 	"net/http"
+
+	"github.com/lixvyang/rebetxin-one/common/errorx"
 
 	"github.com/lixvyang/rebetxin-one/internal/logic/collect"
 	"github.com/lixvyang/rebetxin-one/internal/svc"
@@ -14,7 +15,7 @@ func ListTopicCollectHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 		l := collect.NewListTopicCollectLogic(r.Context(), svcCtx)
 		resp, err := l.ListTopicCollect()
 		if err != nil {
-			httpx.ErrorCtx(r.Context(), w, err)
+			httpx.Error(w, errorx.NewDefaultError("Err"))
 		} else {
 			httpx.OkJsonCtx(r.Context(), w, errorx.NewSuccessJson(resp))
 		}

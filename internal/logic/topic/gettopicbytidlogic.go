@@ -2,7 +2,6 @@ package topic
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/lixvyang/rebetxin-one/common/errorx"
 	"github.com/lixvyang/rebetxin-one/internal/svc"
@@ -53,17 +52,14 @@ func (l *GetTopicByTidLogic) GetTopicByTid(req *types.GetTopicByTidReq) (resp *t
 	respData.UpdatedAt = topic.UpdatedAt.String()
 	respData.YesPrice = topic.YesPrice.String()
 	respData.YesRatio = topic.YesRatio.String()
-	respData.Category = (*types.Category)(l.svcCtx.CategoryMap[topic.Cid])
 
-	uid := fmt.Sprintf("%s", l.ctx.Value("uid"))
-	
-	if uid != "" {
-		resp, err := l.svcCtx.TopicCollectModel.ListByUid(l.ctx, uid)
+	uid := req.Uid
+	if uid != "undefined" {
+		resp, err := l.svcCtx.TopicCollectModel.FindOneByUidTid(l.ctx, uid, req.Tid)
 		if err != nil {
 			logx.Errorw("TopicCollectRPC.GetTopicCollectByUid", logx.LogField{Key: "Err", Value: err.Error()})
-		}
-		for _, r := range resp {
-			if r.Tid == topic.Tid {
+		} else {
+			if resp.Status == 1 {
 				respData.IsCollect = 1
 			}
 		}

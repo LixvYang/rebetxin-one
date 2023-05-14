@@ -88,7 +88,7 @@ func (l *SearchTopicLogic) getTopicDataList(args []*model.Topic) []types.GetTopi
 				topicDataList[i].IsCollect = 1
 			}
 		}
-		topicDataList[i].Category = (*types.Category)(l.svcCtx.CategoryMap[args[i].Cid])
+		// topicDataList[i].Category = (*types.Category)(l.svcCtx.CategoryMap[args[i].Cid])
 		topicDataList[i].Cid = args[i].Cid
 		topicDataList[i].CollectCount = args[i].CollectCount
 		topicDataList[i].Content = args[i].Content

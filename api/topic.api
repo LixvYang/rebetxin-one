@@ -52,8 +52,8 @@ type Topic {
 	Content       string `json:"content"`
 	YesRatio      string `json:"yes_ratio"`
 	NoRatio       string `json:"no_ratio"`
-	YesPrice      string `json:"yes_ratio_price"`
-	NoPrice       string `json:"no_ratio_price"`
+	YesPrice      string `json:"yes_price"`
+	NoPrice       string `json:"no_price"`
 	TotalPrice    string `json:"total_price"`
 	CollectCount  int64  `json:"collect_count"`
 	ReadCount     int64  `json:"read_count"`
@@ -65,12 +65,6 @@ type Topic {
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
 	DeletedAt string `json:"deleted_at"`
-}
-
-type GetTopicDataResp {
-	Topic
-	IsCollect int64     `json:"is_collect,options=0|1"`
-	Category  *Category `json:"category"`
 }
 
 type CreateTopicReq {
@@ -97,6 +91,7 @@ type UpdateTopicReq {
 
 type GetTopicByTidReq {
 	Tid string `path:"tid"`
+	Uid string `form:"uid,optional"`
 }
 
 type SearchTopicReq {
@@ -114,6 +109,7 @@ type UpdateTopicPriceReq {
 
 type ListTopicByCidReq {
 	Cid       int64  `path:"cid"`
+	Uid 			string `form:"uid,optional"`
 	PageToken string `form:"page_token,optional"`
 }
 

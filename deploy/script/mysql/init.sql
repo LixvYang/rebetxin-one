@@ -59,11 +59,11 @@ CREATE TABLE
 CREATE TABLE
     IF NOT EXISTS `topicpurchase` (
         `id` bigint(20) NOT NULL AUTO_INCREMENT,
-        `uid` varchar(36) NOT NULL,
-        `tid` varchar(255) NOT NULL,
-        `yes_price` decimal(32, 8) NOT NULL,
-        `no_price` decimal(32, 8) NOT NULL,
-        `is_show` TINYINT(1) NOT NULL DEFAULT 0,
+        `uid` varchar(36) NOT NULL DEFAULT '',
+        `tid` varchar(255) NOT NULL DEFAULT '',
+        `trace_id` varchar(36) NOT NULL DEFAULT '',
+        `yes_price` decimal(32, 8) NOT NULL DEFAULT 0,
+        `no_price` decimal(32, 8) NOT NULL DEFAULT 0,
         `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         `deleted_at` TIMESTAMP DEFAULT NULL,
@@ -102,23 +102,17 @@ CREATE TABLE
         UNIQUE KEY `idx_trace_id` (`trace_id`),
         UNIQUE KEY `idx_uid` (`uid`)
     ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+# User snapshort table
 CREATE TABLE
-    IF NOT EXISTS `mixinsnapshot` (
+    IF NOT EXISTS `snapshot` (
         `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-        `snapshot_id` VARCHAR(36) NOT NULL DEFAULT '',
         `trace_id` VARCHAR(36) NOT NULL DEFAULT '',
-        `asset_id` VARCHAR(36) NOT NULL DEFAULT '',
-        `opponent_id` VARCHAR(36) NOT NULL DEFAULT '',
-        `amount` DECIMAL(32, 8) NOT NULL DEFAULT '0.00000000',
-        `memo` VARCHAR(255) NOT NULL DEFAULT '',
-        `type` VARCHAR(255) NOT NULL DEFAULT '',
-        `opening_balance` DECIMAL(32, 8) NOT NULL DEFAULT '0.00000000',
-        `closing_balance` DECIMAL(32, 8) NOT NULL DEFAULT '0.00000000',
+        `uid` VARCHAR(36) NOT NULL DEFAULT '',
+        `tid` VARCHAR(36) NOT NULL DEFAULT '',
         `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (`id`),
         INDEX `idx_trace_id` (`trace_id`),
-        INDEX `idx_asset_id` (`asset_id`),
-        INDEX `idx_opponent_id` (`opponent_id`)
+        INDEX `idx_uid_tid` (`uid`, `tid`)
     ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
 INSERT INTO category (id, category_name) VALUES (1, 'Buisiness');

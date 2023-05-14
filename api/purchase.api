@@ -10,19 +10,37 @@ info(
 	group: purchase
 	prefix: /api/v1
 	jwt: Auth
-	middleware: Admin
 )
 service betxin-api {
 	@doc(
 		summary: Create
 	)
 	@handler CreateTopicPurchaseHandler
-	post /purchase
+	post /purchase (CreateTopicPurchaseReq)
+	@doc(
+			summary: Get
+	)
+	@handler GetTopicPurchaseHandler
+	get /purchase/uid/:uid/tid/:tid (GetTopicPurchaseReq) returns (Topicpurchase)
+
+	@doc(
+			summary: Get
+	)
+	@handler ListTopicPurchaseHandler
+	get /purchase returns ([]GetTopicDataResp)
+}
+
+@server(
+	group: purchase
+	prefix: /api/v1
+	middleware: Admin
+)
+service betxin-api {
 	@doc(
 		summary: Get Purchases
 	)
 	@handler GetTopicPurchasesHandler
-	get /purchases returns (GetTopicpurchasesResp)
+	get /purchases returns ([]GetTopicpurchasesResp)
 }
 
 type Topicpurchase {
@@ -37,14 +55,24 @@ type Topicpurchase {
 }
 
 type GetTopicpurchasesResp {
-	Uid        string   `json:"uid"`
-	IsShow     int64    `json:"is_show"`
-	User       *UserInfo `json:"user"`
-	TotalPrice string   `json:"total_price"`
+	Uid        string    `json:"uid"`
+	User       *UserInfo `json:"user"`	
+	TotalPrice string    `json:"total_price"`
 }
 
-type UserInfo {
+type UserInfo {	
 	IdentityNumber string `json:"identity_number"`
 	FullName       string `json:"full_name"`
 	AvatarUrl      string `json:"avatar_url"`
+}
+
+type CreateTopicPurchaseReq {
+	Tid     string `json:"tid"`
+	TraceId string `json:"trace_id"`
+	Uid     string `json:"uid"`
+}
+
+type GetTopicPurchaseReq {
+	Tid string `path:"tid"`
+	Uid string `path:"uid"`
 }

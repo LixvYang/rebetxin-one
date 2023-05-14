@@ -13,26 +13,26 @@ import (
 var (
 	MixinClient *mixin.Client
 	err         error
-	configFile  = flag.String("f", "etc/mixin.yaml", "Specify the config file")
+	configFile  = flag.String("f", "etc/mqueue.yaml", "Specify the config file")
+	Config      config.Config
 )
 
 func init() {
 
 	flag.Parse()
-	var c config.Config
 
-	conf.MustLoad(*configFile, &c, conf.UseEnv())
+	conf.MustLoad(*configFile, &Config, conf.UseEnv())
 
 	// log、prometheus、trace、metricsUrl
-	if err := c.SetUp(); err != nil {
+	if err := Config.SetUp(); err != nil {
 		panic(err)
 	}
 
 	store := &mixin.Keystore{
-		ClientID:   c.Mixin.ClientId,
-		SessionID:  c.Mixin.SessionId,
-		PrivateKey: c.Mixin.PrivateKey,
-		PinToken:   c.Mixin.PinToken,
+		ClientID:   Config.Mixin.ClientId,
+		SessionID:  Config.Mixin.SessionId,
+		PrivateKey: Config.Mixin.PrivateKey,
+		PinToken:   Config.Mixin.PinToken,
 	}
 
 	MixinClient, err = mixin.NewFromKeystore(store)
@@ -40,8 +40,10 @@ func init() {
 		switch {
 		case mixin.IsErrorCodes(err, mixin.Unauthorized, mixin.EndpointNotFound):
 			// handle unauthorized error
+			panic(err)
 		case mixin.IsErrorCodes(err, mixin.InsufficientBalance):
 			// handle insufficient balance error
+			panic(err)
 		default:
 		}
 	}

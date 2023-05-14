@@ -36,6 +36,7 @@ type Topiccollect {
 	Uid    string `json:"uid"`
 	Tid    string `json:"tid"`
 	Status int64  `json:"status"`
+	Topic  *GetTopicDataResp `json:"topic"`
 
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
@@ -43,8 +44,10 @@ type Topiccollect {
 
 type CreateTopicCollectReq {
 	Tid string `json:"tid"`
+
 }
 
 type DeleteTopicCollectReq {
 	Tid string `json:"tid"`
 }
+

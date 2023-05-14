@@ -21,7 +21,7 @@ func SigninHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 		l := oauth.NewSigninLogic(r.Context(), svcCtx)
 		resp, err := l.Signin(&req)
 		if err != nil {
-			httpx.ErrorCtx(r.Context(), w, err)
+			httpx.ErrorCtx(r.Context(), w, errorx.NewDefaultError("Error"))
 		} else {
 			httpx.OkJsonCtx(r.Context(), w, errorx.NewSuccessJson(resp))
 		}

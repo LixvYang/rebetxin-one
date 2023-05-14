@@ -5,6 +5,7 @@ const successMsg = "Success"
 const defaultCode = 1001
 const paramsFailedCode = 1002
 const categoryError = 1003
+const NotFound = 1004
 
 type CodeError struct {
 	Code int    `json:"code"`

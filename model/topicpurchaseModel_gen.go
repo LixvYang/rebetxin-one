@@ -34,6 +34,7 @@ type (
 		FindOneByUidTid(ctx context.Context, uid string, tid string) (*Topicpurchase, error)
 		Update(ctx context.Context, data *Topicpurchase) error
 		Delete(ctx context.Context, id int64) error
+		ListByUid(ctx context.Context, uid string) ([]Topicpurchase, error)
 	}
 
 	defaultTopicpurchaseModel struct {
@@ -45,9 +46,9 @@ type (
 		Id        int64        `db:"id"`
 		Uid       string       `db:"uid"`
 		Tid       string       `db:"tid"`
+		TraceId   string       `db:"trace_id"`
 		YesPrice  decimal.Decimal      `db:"yes_price"`
 		NoPrice   decimal.Decimal      `db:"no_price"`
-		IsShow    int64        `db:"is_show"`
 		CreatedAt time.Time    `db:"created_at"`
 		UpdatedAt time.Time    `db:"updated_at"`
 		DeletedAt sql.NullTime `db:"deleted_at"`
@@ -118,7 +119,7 @@ func (m *defaultTopicpurchaseModel) Insert(ctx context.Context, data *Topicpurch
 	betxinTopicpurchaseUidTidKey := fmt.Sprintf("%s%v:%v", cacheBetxinTopicpurchaseUidTidPrefix, data.Uid, data.Tid)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?)", m.table, topicpurchaseRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.Uid, data.Tid, data.YesPrice, data.NoPrice, data.IsShow, data.DeletedAt)
+		return conn.ExecCtx(ctx, query, data.Uid, data.Tid, data.TraceId, data.YesPrice, data.NoPrice, data.DeletedAt)
 	}, betxinTopicpurchaseIdKey, betxinTopicpurchaseUidTidKey)
 	return ret, err
 }
@@ -133,9 +134,25 @@ func (m *defaultTopicpurchaseModel) Update(ctx context.Context, newData *Topicpu
 	betxinTopicpurchaseUidTidKey := fmt.Sprintf("%s%v:%v", cacheBetxinTopicpurchaseUidTidPrefix, data.Uid, data.Tid)
 	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, topicpurchaseRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, newData.Uid, newData.Tid, newData.YesPrice, newData.NoPrice, newData.IsShow, newData.DeletedAt, newData.Id)
+		return conn.ExecCtx(ctx, query, newData.Uid, newData.Tid, newData.TraceId, newData.YesPrice, newData.NoPrice, newData.DeletedAt, newData.Id)
 	}, betxinTopicpurchaseIdKey, betxinTopicpurchaseUidTidKey)
 	return err
+}
+
+func (m *defaultTopicpurchaseModel) ListByUid(ctx context.Context, uid string) ([]Topicpurchase, error) {
+	var resp []Topicpurchase
+	var err error
+	query := fmt.Sprintf("SELECT %s FROM %s WHERE (uid = ?)", topicpurchaseRows, m.table)
+
+	err = m.QueryRowsNoCacheCtx(ctx, &resp, query, uid)
+	switch err {
+	case nil:
+		return resp, nil
+	case sqlx.ErrNotFound:
+		return nil, ErrNotFound
+	default:
+		return nil, err
+	}
 }
 
 func (m *defaultTopicpurchaseModel) formatPrimary(primary any) string {

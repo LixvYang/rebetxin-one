@@ -33,7 +33,7 @@ type (
 		FindOneByUidTid(ctx context.Context, uid string, tid string) (*TopicCollect, error)
 		Update(ctx context.Context, data *TopicCollect) error
 		Delete(ctx context.Context, id int64) error
-		ListByUid(ctx context.Context, uid string) ([]*TopicCollect, error)
+		ListByUid(ctx context.Context, uid string) ([]TopicCollect, error)
 	}
 
 	defaultTopicCollectModel struct {
@@ -91,28 +91,21 @@ func (m *defaultTopicCollectModel) FindOne(ctx context.Context, id int64) (*Topi
 }
 
 func (m *defaultTopicCollectModel) FindOneByUidTid(ctx context.Context, uid string, tid string) (*TopicCollect, error) {
-	betxinTopicCollectUidTidKey := fmt.Sprintf("%s%v:%v", cacheBetxinTopicCollectUidTidPrefix, uid, tid)
 	var resp TopicCollect
-	err := m.QueryRowIndexCtx(ctx, &resp, betxinTopicCollectUidTidKey, m.formatPrimary, func(ctx context.Context, conn sqlx.SqlConn, v any) (i any, e error) {
-		query := fmt.Sprintf("select %s from %s where `uid` = ? and `tid` = ? limit 1", topicCollectRows, m.table)
-		if err := conn.QueryRowCtx(ctx, &resp, query, uid, tid); err != nil {
+	query := fmt.Sprintf("SELECT %s FROM %s WHERE (`uid` = ? AND `tid` = ?) LIMIT 1", topicCollectRows, m.table)
+	fmt.Println("query: ", query)
+	err := m.QueryRowNoCache(&resp, query, uid, tid)
+	if err != nil {
+			if err == sqlx.ErrNotFound {
+				return nil, ErrNotFound
+			}
 			return nil, err
-		}
-		return resp.Id, nil
-	}, m.queryPrimary)
-	switch err {
-	case nil:
-		return &resp, nil
-	case sqlc.ErrNotFound:
-		return nil, ErrNotFound
-	default:
-		return nil, err
 	}
+	return &resp, nil
 }
 
-
-func (m *defaultTopicCollectModel) ListByUid(ctx context.Context, uid string) ([]*TopicCollect, error) {
-	var resp []*TopicCollect
+func (m *defaultTopicCollectModel) ListByUid(ctx context.Context, uid string) ([]TopicCollect, error) {
+	var resp []TopicCollect
 	var err error
 	query := fmt.Sprintf("SELECT %s FROM %s WHERE (uid = ?)", topicCollectRows, m.table)
 
@@ -120,7 +113,7 @@ func (m *defaultTopicCollectModel) ListByUid(ctx context.Context, uid string) ([
 	switch err {
 	case nil:
 		return resp, nil
-	case sqlc.ErrNotFound:
+	case sqlx.ErrNotFound:
 		return nil, ErrNotFound
 	default:
 		return nil, err
@@ -157,7 +150,7 @@ func (m *defaultTopicCollectModel) formatPrimary(primary any) string {
 }
 
 func (m *defaultTopicCollectModel) queryPrimary(ctx context.Context, conn sqlx.SqlConn, v, primary any) error {
-	query := fmt.Sprintf("select %s from %s where `id` = ? limit 1", topicCollectRows, m.table)
+	query := fmt.Sprintf("select (id, uid, tid, status, created_at, updated_at) from %s where `id` = ? limit 1", m.table)
 	return conn.QueryRowCtx(ctx, v, query, primary)
 }
 

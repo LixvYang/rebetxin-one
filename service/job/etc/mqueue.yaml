@@ -1,0 +1,18 @@
+Name: mqueue-job
+Host: 0.0.0.0
+Port: 3002
+Log:
+  ServiceName: mqueue-job
+  Level: error
+
+Redis:
+  Host: 127.0.0.1:6379
+  Type: node
+
+Mixin:
+  Pin: "785510"
+  ClientId: "30aad5a5-e5f3-4824-9409-c2ff4152724e"
+  SessionId: "438dc6be-cf57-4dd0-aa14-03f9867a0cc2"
+  PinToken: "ontTrPgkpPHcUUtbhjFMddhdb_rg7Fp4n5jz90se520"
+  PrivateKey: "dcwzqL2-19sbpdUZHVx8dKsfyT77v7nC66ZXMt5e6aZYlncY0ZBE78OEXNVDfwr8oel-WFQljCmXunQE-dbYpA"
+  AppSecret: "3393cf8cd5350921ddfacbcf7600b2538f99cbfa9dd32eccfd759bc6076f7e97"

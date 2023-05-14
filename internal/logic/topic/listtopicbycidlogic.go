@@ -33,6 +33,7 @@ var (
 )
 
 func (l *ListTopicByCidLogic) ListTopicByCid(req *types.ListTopicByCidReq) (resp *types.ListTopicByCidResp, err error) {
+	fmt.Println(req)
 	defaultCursor = model.DefaultCursor
 	page := token.Token(req.PageToken).Decode()
 	var (
@@ -62,7 +63,7 @@ func (l *ListTopicByCidLogic) ListTopicByCid(req *types.ListTopicByCidReq) (resp
 		return nil, err
 	}
 
-	topicDataList := l.getTopicDataList(topicList)
+	topicDataList := l.getTopicDataList(topicList, req.Uid)
 
 	var (
 		hasPrePage   bool
@@ -92,36 +93,32 @@ func (l *ListTopicByCidLogic) ListTopicByCid(req *types.ListTopicByCidReq) (resp
 		PrePageToken: prePageToken,
 		List:         topicDataList,
 	}, nil
-
-	return
 }
 
-func (l *ListTopicByCidLogic) getTopicDataList(args []*model.Topic) []types.GetTopicDataResp {
-	uid := fmt.Sprintf("%s", l.ctx.Value("uid"))
+func (l *ListTopicByCidLogic) getTopicDataList(args []*model.Topic, uid string) []types.GetTopicDataResp {
 	isCollectMap := make(map[string]bool)
 	ok := false
 
 	topicDataList := make([]types.GetTopicDataResp, len(args))
 	if uid != "" {
-		if time.Since(l.svcCtx.TopicCollectMap.QueryTime) > time.Minute*10 {
-			resp, err := l.svcCtx.TopicCollectModel.ListByUid(l.ctx, uid)
-			if err != nil {
-				logx.Errorw("TopicCollectRPC.GetTopicCollectByUid", logx.LogField{Key: "Err: ", Value: err.Error()})
-				return nil
-			}
-
-			m := make(map[string]bool)
-
-			for _, tc := range resp {
-				if tc.Status == 1 {
-					m[tc.Tid] = true
-				}
-			}
-
-			l.svcCtx.TopicCollectMap.TopicCollectMap[uid] = m
+		// if time.Since(l.svcCtx.TopicCollectMap.QueryTime) > time.Minute*10 {
+		resp, err := l.svcCtx.TopicCollectModel.ListByUid(l.ctx, uid)
+		if err != nil {
+			logx.Errorw("TopicCollectRPC.GetTopicCollectByUid", logx.LogField{Key: "Err: ", Value: err.Error()})
+			return nil
 		}
 
-		isCollectMap, ok = l.svcCtx.TopicCollectMap.TopicCollectMap["uid"]
+		m := make(map[string]bool)
+
+		for _, tc := range resp {
+			if tc.Status == 1 {
+				m[tc.Tid] = true
+			}
+		}
+
+		l.svcCtx.TopicCollectMap.TopicCollectMap[uid] = m
+
+		isCollectMap, ok = l.svcCtx.TopicCollectMap.TopicCollectMap[uid]
 		if !ok {
 			resp, err := l.svcCtx.TopicCollectModel.ListByUid(l.ctx, uid)
 			if err != nil {
@@ -147,7 +144,9 @@ func (l *ListTopicByCidLogic) getTopicDataList(args []*model.Topic) []types.GetT
 				topicDataList[i].IsCollect = 1
 			}
 		}
-		topicDataList[i].Category = (*types.Category)(l.svcCtx.CategoryMap[args[i].Cid])
+		topicDataList[i].Category = new(types.Category)
+		topicDataList[i].Category.Id = l.svcCtx.CategoryMap[args[i].Cid].Id
+		topicDataList[i].Category.CategoryName = l.svcCtx.CategoryMap[args[i].Cid].CategoryName
 		topicDataList[i].Cid = args[i].Cid
 		topicDataList[i].CollectCount = args[i].CollectCount
 		topicDataList[i].Content = args[i].Content

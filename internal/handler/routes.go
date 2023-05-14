@@ -9,6 +9,7 @@ import (
 	oauth "github.com/lixvyang/rebetxin-one/internal/handler/oauth"
 	purchase "github.com/lixvyang/rebetxin-one/internal/handler/purchase"
 	refund "github.com/lixvyang/rebetxin-one/internal/handler/refund"
+	snapshot "github.com/lixvyang/rebetxin-one/internal/handler/snapshot"
 	topic "github.com/lixvyang/rebetxin-one/internal/handler/topic"
 	topicAdmin "github.com/lixvyang/rebetxin-one/internal/handler/topicAdmin"
 	user "github.com/lixvyang/rebetxin-one/internal/handler/user"
@@ -141,6 +142,42 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 	server.AddRoutes(
 		[]rest.Route{
 			{
+				Method:  http.MethodPost,
+				Path:    "/purchase",
+				Handler: purchase.CreateTopicPurchaseHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/purchase/uid/:uid/tid/:tid",
+				Handler: purchase.GetTopicPurchaseHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/purchase",
+				Handler: purchase.ListTopicPurchaseHandler(serverCtx),
+			},
+		},
+		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
+		rest.WithPrefix("/api/v1"),
+	)
+
+	server.AddRoutes(
+		rest.WithMiddlewares(
+			[]rest.Middleware{serverCtx.Admin},
+			[]rest.Route{
+				{
+					Method:  http.MethodGet,
+					Path:    "/purchases",
+					Handler: purchase.GetTopicPurchasesHandler(serverCtx),
+				},
+			}...,
+		),
+		rest.WithPrefix("/api/v1"),
+	)
+
+	server.AddRoutes(
+		[]rest.Route{
+			{
 				Method:  http.MethodGet,
 				Path:    "/collect",
 				Handler: collect.ListTopicCollectHandler(serverCtx),
@@ -156,26 +193,6 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Handler: collect.DeleteTopicCollectHandler(serverCtx),
 			},
 		},
-		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
-		rest.WithPrefix("/api/v1"),
-	)
-
-	server.AddRoutes(
-		rest.WithMiddlewares(
-			[]rest.Middleware{serverCtx.Admin},
-			[]rest.Route{
-				{
-					Method:  http.MethodPost,
-					Path:    "/purchase",
-					Handler: purchase.CreateTopicPurchaseHandler(serverCtx),
-				},
-				{
-					Method:  http.MethodGet,
-					Path:    "/purchases",
-					Handler: purchase.GetTopicPurchasesHandler(serverCtx),
-				},
-			}...,
-		),
 		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
 		rest.WithPrefix("/api/v1"),
 	)
@@ -230,5 +247,17 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		),
 		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
 		rest.WithPrefix("/api/v1/admin"),
+	)
+
+	server.AddRoutes(
+		[]rest.Route{
+			{
+				Method:  http.MethodPost,
+				Path:    "/snapshot",
+				Handler: snapshot.CreateSnapshotHandler(serverCtx),
+			},
+		},
+		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
+		rest.WithPrefix("/api/v1"),
 	)
 }
