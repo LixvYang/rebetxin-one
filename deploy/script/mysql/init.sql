@@ -109,6 +109,7 @@ CREATE TABLE
         `trace_id` VARCHAR(36) NOT NULL DEFAULT '',
         `uid` VARCHAR(36) NOT NULL DEFAULT '',
         `tid` VARCHAR(36) NOT NULL DEFAULT '',
+        `end` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '',
         `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (`id`),
         INDEX `idx_trace_id` (`trace_id`),

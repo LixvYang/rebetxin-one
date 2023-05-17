@@ -36,7 +36,5 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		AsynqServer: newAsynqServer(c),
 		AsynqClient: newAsynqClient(c),
 		MixinClient: mixinClient,
-		// MixinSnapshotRpc: mixinsnapshotsrv.NewMixinsnapshotsrv(zrpc.MustNewClient(c.MixinSnapshotRPC)),
-		// TopicpurchaseRpc: topicpurchasesrv.NewTopicpurchasesrv(zrpc.MustNewClient(c.TopicpurchaseRPC)),
 	}
 }

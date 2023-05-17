@@ -31,6 +31,7 @@ type (
 		FindOne(ctx context.Context, id int64) (*Snapshot, error)
 		Update(ctx context.Context, data *Snapshot) error
 		Delete(ctx context.Context, id int64) error
+		FindOneByTraceId(ctx context.Context, traceId string) (*Snapshot, error)
 	}
 
 	defaultSnapshotModel struct {
@@ -43,6 +44,7 @@ type (
 		TraceId   string    `db:"trace_id"`
 		Uid       string    `db:"uid"`
 		Tid       string    `db:"tid"`
+		End       int64     `db:"end"`
 		CreatedAt time.Time `db:"created_at"`
 	}
 )
@@ -80,11 +82,27 @@ func (m *defaultSnapshotModel) FindOne(ctx context.Context, id int64) (*Snapshot
 	}
 }
 
+func (m *defaultSnapshotModel) FindOneByTraceId(ctx context.Context, traceId string) (*Snapshot, error) {
+	var resp Snapshot
+	query := fmt.Sprintf("select %s from %s where `trace_id` = ? limit 1", snapshotRows, m.table)
+
+	err := m.QueryRowNoCacheCtx(ctx, &resp, query, traceId)
+	switch err {
+	case nil:
+		return &resp, nil
+	case sqlc.ErrNotFound:
+		return nil, ErrNotFound
+	default:
+		return nil, err
+	}
+}
+
+
 func (m *defaultSnapshotModel) Insert(ctx context.Context, data *Snapshot) (sql.Result, error) {
 	betxinSnapshotIdKey := fmt.Sprintf("%s%v", cacheBetxinSnapshotIdPrefix, data.Id)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?)", m.table, snapshotRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.TraceId, data.Uid, data.Tid)
+		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?)", m.table, snapshotRowsExpectAutoSet)
+		return conn.ExecCtx(ctx, query, data.TraceId, data.Uid, data.Tid, data.End)
 	}, betxinSnapshotIdKey)
 	return ret, err
 }
@@ -93,7 +111,7 @@ func (m *defaultSnapshotModel) Update(ctx context.Context, data *Snapshot) error
 	betxinSnapshotIdKey := fmt.Sprintf("%s%v", cacheBetxinSnapshotIdPrefix, data.Id)
 	_, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, snapshotRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, data.TraceId, data.Uid, data.Tid, data.Id)
+		return conn.ExecCtx(ctx, query, data.TraceId, data.Uid, data.Tid, data.End, data.Id)
 	}, betxinSnapshotIdKey)
 	return err
 }

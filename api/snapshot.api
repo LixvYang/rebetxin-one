@@ -17,10 +17,23 @@ service betxin-api {
 	)
 	@handler CreateSnapshotHandler
 	post /snapshot (CreateSnapshotReq)
+	@doc(
+			summary: Get
+	)
+	@handler GetSnapshotHandler
+	get /snapshot (GetSnapshotReq) returns (GetSnapshotResp)
 }
 
 type CreateSnapshotReq {
 	Uid     string `json:"uid"`
 	TraceId string `json:"trace_id"`
 	Tid     string `json:"tid"`
+}
+
+type GetSnapshotReq {
+	TraceId string `form:"trace_id"`
+}
+
+type GetSnapshotResp {
+	End int64 `json:"end"`
 }

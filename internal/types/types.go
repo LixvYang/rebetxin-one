@@ -206,3 +206,11 @@ type CreateSnapshotReq struct {
 	TraceId string `json:"trace_id"`
 	Tid     string `json:"tid"`
 }
+
+type GetSnapshotReq struct {
+	TraceId string `form:"trace_id"`
+}
+
+type GetSnapshotResp struct {
+	End int64 `json:"end"`
+}

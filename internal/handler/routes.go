@@ -256,6 +256,11 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Path:    "/snapshot",
 				Handler: snapshot.CreateSnapshotHandler(serverCtx),
 			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/snapshot",
+				Handler: snapshot.GetSnapshotHandler(serverCtx),
+			},
 		},
 		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
 		rest.WithPrefix("/api/v1"),
