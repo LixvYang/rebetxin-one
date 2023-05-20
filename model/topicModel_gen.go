@@ -41,7 +41,6 @@ type (
 		Delete(ctx context.Context, id int64) error
 		ListByCid(ctx context.Context, cid int64, preId int64, pageSize int64) ([]*Topic, error)
 		Search(ctx context.Context, title, intro, content string) ([]*Topic, error)
-		UpdatePrice(tx *sql.Tx, data *Topic) error
 	}
 
 	defaultTopicModel struct {
@@ -78,12 +77,6 @@ func newTopicModel(conn sqlx.SqlConn, c cache.CacheConf) *defaultTopicModel {
 		CachedConn: sqlc.NewConn(conn, c),
 		table:      "`topic`",
 	}
-}
-
-func (m *defaultTopicModel) UpdatePrice(tx *sql.Tx, data *Topic) error {
-	query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, topicRowsWithPlaceHolder)
-	_, err := tx.Exec(query, data.YesPrice, data.NoPrice, data.YesRatio, data.NoRatio, data.TotalPrice, data.Id)
-	return err
 }
 
 func (m *defaultTopicModel) Delete(ctx context.Context, id int64) error {

@@ -15,4 +15,13 @@ type Config struct {
 		DNS string
 	}
 	CacheRedis cache.CacheConf
+
+	Mixin struct {
+		Pin        string
+		ClientId   string
+		SessionId  string
+		PinToken   string
+		PrivateKey string
+		AppSecret  string
+	}
 }

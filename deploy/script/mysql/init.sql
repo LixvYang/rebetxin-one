@@ -1,5 +1,7 @@
 CREATE DATABASE IF NOT EXISTS betxin;
 
+use betxin;
+
 CREATE TABLE
     IF NOT EXISTS `topic` (
         `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -25,7 +27,7 @@ CREATE TABLE
         PRIMARY KEY (`id`),
         INDEX `idx_cid` (`cid`),
         UNIQUE `idx_tid` (`tid`),
-        UNIQUE `title_intro_content_index` (`title`, `intro`, `content`)
+        INDEX `title_intro_content_index` (`title`, `intro`, `content`)
     ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
 CREATE TABLE
@@ -102,6 +104,7 @@ CREATE TABLE
         UNIQUE KEY `idx_trace_id` (`trace_id`),
         UNIQUE KEY `idx_uid` (`uid`)
     ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+
 # User snapshort table
 CREATE TABLE
     IF NOT EXISTS `snapshot` (

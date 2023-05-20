@@ -3,7 +3,6 @@ package oauth
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -38,14 +37,14 @@ func NewSigninLogic(ctx context.Context, svcCtx *svc.ServiceContext) *SigninLogi
 func (l *SigninLogic) Signin(req *types.SigninReq) (resp *types.SigninResp, err error) {
 	if req.LoginMethod != "mixin_token" && req.LoginMethod != "mvm" {
 		logx.Errorw("req.LoginMethod: ", logx.LogField{Key: "Error: ", Value: err})
-		return nil, errors.New("login type error!")
+		return nil, errorx.NewDefaultError("Login Type Error!")
 	}
 
 	authorizer := auth.New([]string{
 		"30aad5a5-e5f3-4824-9409-c2ff4152724e",
 	}, []string{
-		"127.0.0.1:4000",
-		"127.0.0.1:4000/*",
+		"localhost:4000",
+		"localhost:4000/*",
 	})
 
 	switch req.LoginMethod {

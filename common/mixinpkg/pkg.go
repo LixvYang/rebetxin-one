@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/fox-one/mixin-sdk-go"
 	"github.com/shopspring/decimal"
@@ -24,6 +25,7 @@ func SendTransfer(ctx context.Context, opponentId string, memo string, assetId s
 		}, Config.Mixin.Pin); err == nil {
 			return
 		}
+		time.Sleep(1 * time.Second)
 	}
 }
 
@@ -114,8 +116,8 @@ func SendButtonGroup(ctx context.Context, tid, AssetId string, receiptId string)
 	memo.Select = 1
 	noMemoByte, _ := json.Marshal(memo)
 
-	yesAction := fmt.Sprintf("mixin://pay?recipient=%s&asset=%s&amount=%d&memo=%s&trace=%s", MixinClient.ClientID, AssetId, 100, base64.StdEncoding.EncodeToString(yesMemoByte))
-	noAction := fmt.Sprintf("mixin://pay?recipient=%s&asset=%s&amount=%d&memo=%s&trace=%s", MixinClient.ClientID, AssetId, 100, base64.StdEncoding.EncodeToString(noMemoByte))
+	yesAction := fmt.Sprintf("mixin://pay?recipient=%s&asset=%s&amount=%d&memo=%s&trace=%s", MixinClient.ClientID, AssetId, 100, base64.StdEncoding.EncodeToString(yesMemoByte), "")
+	noAction := fmt.Sprintf("mixin://pay?recipient=%s&asset=%s&amount=%d&memo=%s&trace=%s", MixinClient.ClientID, AssetId, 100, base64.StdEncoding.EncodeToString(noMemoByte), "")
 	btnGrpMsg := &mixin.AppButtonGroupMessage{
 		{
 			Label:  "BET YES",

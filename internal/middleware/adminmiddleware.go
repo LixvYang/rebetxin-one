@@ -1,6 +1,8 @@
 package middleware
 
-import "net/http"
+import (
+	"net/http"
+)
 
 type AdminMiddleware struct {
 }
@@ -11,9 +13,10 @@ func NewAdminMiddleware() *AdminMiddleware {
 
 func (m *AdminMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// TODO generate middleware impement function, delete after code implementation
-
-		// Passthrough to next handler if need
+		xid := r.Header.Get("xid")
+		if xid != "123456" {
+			return
+		}
 		next(w, r)
 	}
 }

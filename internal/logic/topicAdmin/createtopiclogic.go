@@ -34,7 +34,7 @@ func (l *CreateTopicLogic) CreateTopic(req *types.CreateTopicReq) (resp *types.T
 	_, err = l.svcCtx.TopicModel.Insert(l.ctx, topic)
 	if err != nil {
 		logx.Errorw("TopicModel.Insert", logx.LogField{Key: "Err: ", Value: err.Error()})
-		return nil, errorx.NewCodeError(1003, "Create Category Error!")
+		return nil, errorx.NewCodeError(1003, "Create Topic Error!")
 	}
 
 	return nil, err

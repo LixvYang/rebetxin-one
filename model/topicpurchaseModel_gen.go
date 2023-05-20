@@ -35,6 +35,7 @@ type (
 		Update(ctx context.Context, data *Topicpurchase) error
 		Delete(ctx context.Context, id int64) error
 		ListByUid(ctx context.Context, uid string) ([]Topicpurchase, error)
+		ListByTid(ctx context.Context, tid string) ([]Topicpurchase, error)
 	}
 
 	defaultTopicpurchaseModel struct {
@@ -154,6 +155,23 @@ func (m *defaultTopicpurchaseModel) ListByUid(ctx context.Context, uid string) (
 		return nil, err
 	}
 }
+
+func (m *defaultTopicpurchaseModel) ListByTid(ctx context.Context, tid string) ([]Topicpurchase, error) {
+	var resp []Topicpurchase
+	var err error
+	query := fmt.Sprintf("SELECT %s FROM %s WHERE (tid = ?)", topicpurchaseRows, m.table)
+
+	err = m.QueryRowsNoCacheCtx(ctx, &resp, query, tid)
+	switch err {
+	case nil:
+		return resp, nil
+	case sqlx.ErrNotFound:
+		return nil, ErrNotFound
+	default:
+		return nil, err
+	}
+}
+
 
 func (m *defaultTopicpurchaseModel) formatPrimary(primary any) string {
 	return fmt.Sprintf("%s%v", cacheBetxinTopicpurchaseIdPrefix, primary)
