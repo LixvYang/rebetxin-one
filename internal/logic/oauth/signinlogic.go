@@ -84,7 +84,6 @@ func (l *SigninLogic) Signin(req *types.SigninReq) (resp *types.SigninResp, err 
 					return nil, errorx.NewDefaultError("UserModel.Insert(l.ctx, &user) error")
 				}
 			}
-
 			logx.Errorw("UserModel.FindOneByUid: ", logx.LogField{Key: "Err", Value: err.Error()})
 			return nil, errorx.NewDefaultError("UserModel.FindOneByUid error!")
 		} else {

@@ -11,12 +11,13 @@ import (
 
 	"github.com/fox-one/mixin-sdk-go"
 	"github.com/hibiken/asynq"
+	"github.com/lixvyang/rebetxin-one/common/constant"
+	"github.com/lixvyang/rebetxin-one/common/errorx"
+	"github.com/lixvyang/rebetxin-one/model"
 	"github.com/lixvyang/rebetxin-one/service/job/internal/svc"
 	"github.com/shopspring/decimal"
 	"github.com/zeromicro/go-zero/core/logx"
 )
-
-var dtmServer = "consul://127.0.0.1:8500/dtmservice"
 
 // SyncMixinSnapshotHandler
 type SyncMixinSnapshotHandler struct {
@@ -46,7 +47,7 @@ func (l *SyncMixinSnapshotHandler) ProcessTask(ctx context.Context, _ *asynq.Tas
 
 type Memo struct {
 	Tid    string `json:"tid"`
-	Select int    `json:"select" comment:"0yes 1no"`
+	Select int64  `json:"select" comment:"0yes 1no"`
 }
 
 type Stats struct {
@@ -62,7 +63,7 @@ func (s *Stats) updatePrevSnapshotCreatedAt(time time.Time) {
 }
 
 func getTopSnapshotCreatedAt(client *mixin.Client, c context.Context) (time.Time, error) {
-	snapshots, err := client.ReadSnapshots(c, "", time.Now(), "", 50)
+	snapshots, err := client.ReadSnapshots(c, constant.CNB_ASSET_ID, time.Now(), "", 50)
 	fmt.Println(len(snapshots))
 	if err != nil {
 		return time.Now(), err
@@ -104,28 +105,14 @@ func (l *SyncMixinSnapshotHandler) sendTopCreatedAtToChannel(ctx context.Context
 	wg.Wait()
 }
 
-func (l *SyncMixinSnapshotHandler) handlerNewMixinSnapshot(ctx context.Context, snapshot *mixin.Snapshot) error {
+func (l *SyncMixinSnapshotHandler) handlerNewMixinSnapshot(ctx context.Context, snapshot *mixin.Snapshot) (err error) {
+	sp := new(model.Snapshot)
+	userPurchase := new(model.Topicpurchase)
 	// 1. 根据用户发送的Memo去判断是否进行下一步
 	if snapshot.Memo == "" {
 		logx.Infow("snapshot.Memo == \"\": ", logx.LogField{Key: "Error: ", Value: "Handle Mixin snapshot error!"})
 		return nil
 	}
-	// 1.1 首先创建一个 mixinsnapshot 同步机器人账单
-	// 1.1.1 同步失败了也没关系
-	// _, err := l.svcCtx.MixinSnapshotRpc.AddMixinsnapshot(l.ctx, &mixinsnapshotsrv.AddMixinsnapshotReq{
-	// 	SnapshotId:     snapshot.SnapshotID,
-	// 	AssetId:        snapshot.AssetID,
-	// 	OpponentId:     snapshot.OpponentID,
-	// 	Amount:         snapshot.Amount.Truncate(8).InexactFloat64(),
-	// 	TraceId:        snapshot.TraceID,
-	// 	Memo:           snapshot.Memo,
-	// 	Type:           snapshot.Type,
-	// 	OpeningBalance: snapshot.OpeningBalance.Truncate(8).InexactFloat64(),
-	// 	ClosingBalance: snapshot.ClosingBalance.Truncate(8).InexactFloat64(),
-	// })
-	// if err != nil {
-	// 	logx.Errorw("MixinSnapshotRpc.AddMixinsnapshot: ", logx.LogField{Key: "Error: ", Value: err})
-	// }
 
 	// 2. 解码用户发送的Memo
 	// 2.1 解码Memo失败 则退出
@@ -140,6 +127,27 @@ func (l *SyncMixinSnapshotHandler) handlerNewMixinSnapshot(ctx context.Context, 
 		return err
 	}
 
+	// 1.1 首先创建一个 snapshot 同步机器人账单
+	// 1.1.1 同步失败了也没关系
+	sp, err = l.svcCtx.SnapshotModel.FindOneByTraceId(l.ctx, snapshot.TraceID)
+	if err != nil {
+		if err == model.ErrNotFound {
+			logx.Errorw("SnapshotModel.FindOneByTraceId", logx.LogField{Key: "Error", Value: err.Error()})
+			l.svcCtx.SnapshotModel.Insert(l.ctx, &model.Snapshot{
+				Uid:     snapshot.Sender,
+				TraceId: snapshot.TraceID,
+				Tid:     memo.Tid,
+				End:     1,
+			})
+			sp, _ = l.svcCtx.SnapshotModel.FindOneByTraceId(l.ctx, snapshot.TraceID)
+		} else {
+			logx.Errorw("SnapshotModel.FindOneByTraceId", logx.LogField{Key: "Error", Value: err.Error()})
+			return err
+		}
+	}
+	sp.End = 1
+	_ = l.svcCtx.SnapshotModel.Update(l.ctx, sp)
+
 	// @2023.4.27 只使用CNB做价格  存储的也只有CNB的个数
 	// type Memo struct {
 	// 	Tid    string `json:"tid"`
@@ -151,60 +159,70 @@ func (l *SyncMixinSnapshotHandler) handlerNewMixinSnapshot(ctx context.Context, 
 		logx.Info("snapshot.AssetID is not CNB.")
 	}
 
-	// 4.1 是CNB 则下一步
-	// 发送添加更新话题购买系统 这里的具体逻辑由话题购买系统做逻辑
-	// TopicpurchaseBusiServer, err := l.svcCtx.Config.TopicpurchaseRPC.BuildTarget()
-	// if err != nil {
-	// 	logx.Errorw("TopicpurchaseRPC.BuildTarget err: ", logx.LogField{Key: "err: ", Value: err})
-	// 	return err
-	// }
+	// 4 是CNB 则下一步
+	// 4.1 更新话题系统
+	// 4.2 更新话题购买系统
+	// 4.3 通知用户
+	topic, err := l.svcCtx.TopicModel.FindOneByTid(l.ctx, memo.Tid)
+	if err != nil {
+		logx.Errorw("TopicModel.FindOneByTid: ", logx.LogField{Key: "Error", Value: err.Error()})
+		return err
+	}
 
-	// TopicBusiServer, err := l.svcCtx.Config.TopicRPC.BuildTarget()
-	// if err != nil {
-	// 	logx.Errorw("TopicRPC.BuildTarget err: ", logx.LogField{Key: "err: ", Value: err})
-	// 	return err
-	// }
+	userPurchase, err = l.svcCtx.TopicPurchaseModel.FindOneByUidTid(l.ctx, sp.Uid, sp.Tid)
+	if err != nil {
+		if err == model.ErrNotFound {
+			l.svcCtx.TopicPurchaseModel.Insert(l.ctx, &model.Topicpurchase{
+				Uid: sp.Uid,
+				Tid: sp.Tid,
+			})
+			userPurchase, _ = l.svcCtx.TopicPurchaseModel.FindOneByUidTid(l.ctx, sp.Uid, sp.Tid)
+		} else {
+			logx.Errorw("TopicPurchaseModel.FindOneByUidTid", logx.LogField{Key: "Error", Value: err.Error()})
+		}
+	}
 
-	// updateTopicPurchaseReq, updateTopicReq := createReq(&memo, snapshot)
-	//这里只举了saga例子，tcc等其他例子基本没啥区别具体可以看dtm官网
-	// gid := dtmgrpc.MustGenGid(dtmServer)
-	// saga := dtmgrpc.NewSagaGrpc(dtmServer, gid).
-	// Add(TopicpurchaseBusiServer+"/pb.topicpurchasesrv/UpdateTopicpurchase", TopicpurchaseBusiServer+"/pb.topicpurchasesrv/UpdateTopicpurchaseRollback", updateTopicPurchaseReq).
-	// Add(TopicBusiServer+"/pb.topicsrv/UpdateTopic", TopicBusiServer+"/pb.topicsrv/UpdateTopicRollback", updateTopicReq)
-
-	// err = saga.Submit()
-	// dtmimp.FatalIfError(err)
-	// if err != nil {
-	// 	// TODO
-	// 	// 需要将金额返还给用户
-	// 	return fmt.Errorf("submit data to  dtm-server err  : %+v \n", err)
-	// }
-
-	// 接着更新话题系统 增加金额 Amount
-
-	return nil
+	return l.HandleUserPurchase(memo.Select, userPurchase, topic, snapshot)
 }
 
-// func createReq(memo *Memo, snapshot *mixin.Snapshot) (*topicpurchasesrv.UpdateTopicpurchaseReq, *topicsrv.UpdateTopicReq) {
-// 	amount := snapshot.Amount.String()
-// 	updateTopicPurchaseReq := &topicpurchasesrv.UpdateTopicpurchaseReq{
-// 		Action: 0, // 0 buy
-// 		Uid:    snapshot.SnapshotID,
-// 		Tid:    memo.Tid,
-// 	}
-
-// 	updateTopicReq := &topicsrv.UpdateTopicReq{
-// 		TotalPrice: amount,
-// 		Action:     0, // 0 buy
-// 	}
-
-// 	if memo.Select == 0 {
-// 		updateTopicReq.YesPrice = amount
-// 		updateTopicPurchaseReq.YesPrice = amount
-// 	} else {
-// 		updateTopicPurchaseReq.NoPrice = amount
-// 		updateTopicReq.NoPrice = amount
-// 	}
-
-// 	return updateTopicPurchaseReq, updateTopicReq
-// }
+func (l *SyncMixinSnapshotHandler) HandleUserPurchase(Select int64, userPurchase *model.Topicpurchase, topic *model.Topic, snapshot *mixin.Snapshot) (err error) {
+	switch Select {
+	case 0:
+		// 更新用户购买系统逻辑
+		userPurchase.YesPrice = userPurchase.YesPrice.Add(snapshot.Amount)
+		err := l.svcCtx.TopicPurchaseModel.Update(l.ctx, userPurchase)
+		if err != nil {
+			logx.Errorw("TopicPurchaseModel.Update", logx.LogField{Key: "Error: ", Value: err.Error()})
+			return errorx.NewDefaultError("TopicPurchaseModel.Update Error!")
+		}
+		topic.YesPrice = topic.YesPrice.Add(snapshot.Amount)
+		topic.TotalPrice = topic.TotalPrice.Add(snapshot.Amount)
+		topic.YesRatio = topic.YesPrice.Div(topic.TotalPrice).Mul(decimal.NewFromInt(100))
+		topic.NoRatio = topic.NoPrice.Div(topic.TotalPrice).Mul(decimal.NewFromInt(100))
+		err = l.svcCtx.TopicModel.Update(l.ctx, topic)
+		if err != nil {
+			logx.Errorw("TopicModel.Update", logx.LogField{Key: "Error: ", Value: err.Error()})
+			return errorx.NewDefaultError("Topic.Update Error!")
+		}
+	case 1:
+		// 更新用户购买系统逻辑
+		userPurchase.NoPrice = userPurchase.YesPrice.Add(snapshot.Amount)
+		err := l.svcCtx.TopicPurchaseModel.Update(l.ctx, userPurchase)
+		if err != nil {
+			logx.Errorw("TopicPurchaseModel.Update", logx.LogField{Key: "Error: ", Value: err.Error()})
+			return errorx.NewDefaultError("TopicPurchaseModel.Update Error!")
+		}
+		topic.NoPrice = topic.NoPrice.Add(snapshot.Amount)
+		topic.TotalPrice = topic.TotalPrice.Add(snapshot.Amount)
+		topic.YesRatio = topic.YesPrice.Div(topic.TotalPrice).Mul(decimal.NewFromInt(100))
+		topic.NoRatio = topic.NoPrice.Div(topic.TotalPrice).Mul(decimal.NewFromInt(100))
+		err = l.svcCtx.TopicModel.Update(l.ctx, topic)
+		if err != nil {
+			logx.Errorw("TopicModel.Update", logx.LogField{Key: "Error: ", Value: err.Error()})
+			return errorx.NewDefaultError("Topic.Update Error!")
+		}
+	default:
+		return err
+	}
+	return nil
+}

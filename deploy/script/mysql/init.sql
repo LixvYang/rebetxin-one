@@ -63,7 +63,6 @@ CREATE TABLE
         `id` bigint(20) NOT NULL AUTO_INCREMENT,
         `uid` varchar(36) NOT NULL DEFAULT '',
         `tid` varchar(255) NOT NULL DEFAULT '',
-        `trace_id` varchar(36) NOT NULL DEFAULT '',
         `yes_price` decimal(32, 8) NOT NULL DEFAULT 0,
         `no_price` decimal(32, 8) NOT NULL DEFAULT 0,
         `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

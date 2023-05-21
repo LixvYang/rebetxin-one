@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/lixvyang/rebetxin-one/common/constant"
 	"github.com/lixvyang/rebetxin-one/common/errorx"
 	"github.com/lixvyang/rebetxin-one/internal/svc"
 	"github.com/lixvyang/rebetxin-one/internal/types"
@@ -79,10 +80,9 @@ func (l *CreateRefundLogic) CreateRefund(req *types.CreateRefundReq) error {
 		return errorx.NewDefaultError("Error: refund.")
 	}
 	// 给用户转账
-	l.svcCtx.SendTransfer(l.ctx, uid, fmt.Sprintf("%s - 退款", topic.Title), types.CNB_ASSET_ID, refundAmount)
+	l.svcCtx.SendTransfer(l.ctx, uid, fmt.Sprintf("%s - 退款", topic.Title), constant.CNB_ASSET_ID, refundAmount)
 
 	// 向其他用户转账
-
 	feeAmount := totalAmount.Mul(decimal.NewFromFloat(0.1))
 	tps, err := l.svcCtx.TopicPurchaseModel.ListByTid(l.ctx, req.Tid)
 	if err != nil {
@@ -94,7 +94,7 @@ func (l *CreateRefundLogic) CreateRefund(req *types.CreateRefundReq) error {
 			continue
 		}
 		// 转账逻辑
-		l.svcCtx.SendTransfer(l.ctx, tps[i].Uid, fmt.Sprintf("%s - 退款奖励", topic.Title), types.CNB_ASSET_ID, peerAmount)
+		l.svcCtx.SendTransfer(l.ctx, tps[i].Uid, fmt.Sprintf("%s - 退款奖励", topic.Title), constant.CNB_ASSET_ID, peerAmount)
 	}
 
 	return nil
@@ -110,11 +110,11 @@ func (l *CreateRefundLogic) HandleRefundLogic(Select int64, userPurchase *model.
 			logx.Errorw("TopicPurchaseModel.Update", logx.LogField{Key: "Error: ", Value: err.Error()})
 			return errorx.NewDefaultError("TopicPurchaseModel.Update Error!")
 		}
-		// 1.
 		// 更新话题逻辑
 		topic.YesPrice = topic.YesPrice.Sub(totalAmount)
 		topic.TotalPrice = topic.TotalPrice.Sub(totalAmount)
-		topic.YesRatio = topic.YesPrice.Div(topic.TotalPrice)
+		topic.YesRatio = topic.YesPrice.Div(topic.TotalPrice).Mul(decimal.NewFromInt(100))
+		topic.NoRatio = topic.NoPrice.Div(topic.TotalPrice).Mul(decimal.NewFromInt(100))
 		err = l.svcCtx.TopicModel.Update(l.ctx, topic)
 		if err != nil {
 			logx.Errorw("TopicModel.Update", logx.LogField{Key: "Error: ", Value: err.Error()})
@@ -130,7 +130,8 @@ func (l *CreateRefundLogic) HandleRefundLogic(Select int64, userPurchase *model.
 		}
 		topic.NoPrice = topic.NoPrice.Sub(totalAmount)
 		topic.TotalPrice = topic.TotalPrice.Sub(totalAmount)
-		topic.NoPrice = topic.NoPrice.Div(topic.TotalPrice)
+		topic.YesRatio = topic.YesPrice.Div(topic.TotalPrice).Mul(decimal.NewFromInt(100))
+		topic.NoRatio = topic.NoPrice.Div(topic.TotalPrice).Mul(decimal.NewFromInt(100))
 		err = l.svcCtx.TopicModel.Update(l.ctx, topic)
 		if err != nil {
 			logx.Errorw("TopicModel.Update", logx.LogField{Key: "Error: ", Value: err.Error()})
