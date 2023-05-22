@@ -20,7 +20,8 @@ func main() {
 	var c config.Config
 
 	conf.MustLoad(*configFile, &c, conf.UseEnv())
-
+	// quit := make(chan os.Signal, 1)
+	// signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM) // 此处不会阻塞
 	// log、prometheus、trace、metricsUrl
 	if err := c.SetUp(); err != nil {
 		panic(err)
@@ -35,4 +36,8 @@ func main() {
 		logx.WithContext(ctx).Errorf("!!!CronJobErr!!! run err:%+v", err)
 		os.Exit(1)
 	}
+
+	// <-quit // 阻塞在此，当接收到上述两种信号时才会往下执行
+	// logx.Info("Shutdown Server ...")
+	// logx.Info("Server exiting")
 }

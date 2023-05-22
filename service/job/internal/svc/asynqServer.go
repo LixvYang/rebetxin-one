@@ -15,7 +15,12 @@ func newAsynqServer(c config.Config) *asynq.Server {
 				fmt.Printf("asynq server exec task IsFailure ======== >>>>>>>>>>>  err : %+v \n", err)
 				return true
 			},
-			Concurrency: 20, //max concurrent process job task num
+			Concurrency: 1, //max concurrent process job task num
+			Queues: map[string]int{
+				"critical": 6,
+				"default":  3,
+				"low":      1,
+			},
 		},
 	)
 }
