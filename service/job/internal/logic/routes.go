@@ -77,8 +77,6 @@ func getTopHundredCreated(client *mixin.Client, c context.Context) ([]*mixin.Sna
 	return snapshots, nil
 }
 
-var count int
-
 func (l *CronJob) InitCron() {
 	ctx := context.Background()
 	createdAt, err := getLastedSnapshot(l.svcCtx.MixinClient, ctx)
@@ -98,8 +96,6 @@ func (l *CronJob) InitCron() {
 			if snapshot.CreatedAt.After(preCreatedAt) {
 				stats.updatePrevSnapshotCreatedAt(snapshot.CreatedAt)
 				if snapshot.Amount.Cmp(decimal.NewFromInt(0)) == 1 && snapshot.Type == "transfer" {
-					fmt.Println("count: ", count)
-					count++
 					task, err := NewMixinSnapshot(snapshot)
 					l.svcCtx.AsynqClient.Enqueue(task)
 					if err != nil {

@@ -86,8 +86,15 @@ func (l *CreateRefundLogic) CreateRefund(req *types.CreateRefundReq) error {
 	feeAmount := totalAmount.Mul(decimal.NewFromFloat(0.1))
 	tps, err := l.svcCtx.TopicPurchaseModel.ListByTid(l.ctx, req.Tid)
 	if err != nil {
-
+		logx.Errorw("TopicPurchaseModel.ListByTid", logx.LogField{Key: "Error: ", Value: err.Error()})
+		return errorx.NewDefaultError("TopicPurchaseModel.ListByTid: refund.")
 	}
+	
+	if len(tps) <= 1 {
+		logx.Info("len(tps) <= 1")
+		return nil
+	}
+
 	peerAmount := feeAmount.Div(decimal.NewFromInt(int64(len(tps) - 1)))
 	for i := 0; i < len(tps); i++ {
 		if tps[i].Uid == uid {

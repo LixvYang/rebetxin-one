@@ -39,7 +39,7 @@ type Refund struct {
 
 type CreateRefundReq struct {
 	Tid    string `json:"tid"`
-	Select int64  `json:"selects,option=0|1"` // 0 -> Yes 1 -> No
+	Select int64  `json:"select,option=0|1"` // 0 -> Yes 1 -> No
 	Amount string `json:"amount"`
 }
 

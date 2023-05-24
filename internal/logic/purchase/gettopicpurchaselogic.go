@@ -32,7 +32,7 @@ func (l *GetTopicPurchaseLogic) GetTopicPurchase(req *types.GetTopicPurchaseReq)
 		if err == model.ErrNotFound {
 			return resp, errorx.NewDefaultError("Not Found")
 		}
-		return nil, errorx.NewDefaultError(err.Error())
+		return resp, errorx.NewDefaultError(err.Error())
 	}
 	resp.Id = tp.Id
 	resp.CreatedAt = tp.CreatedAt.String()

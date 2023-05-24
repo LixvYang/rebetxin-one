@@ -21,7 +21,7 @@ func GetTopicPurchaseHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 		l := purchase.NewGetTopicPurchaseLogic(r.Context(), svcCtx)
 		resp, err := l.GetTopicPurchase(&req)
 		if err != nil {
-			httpx.Error(w, errorx.NewDefaultError("Error"))
+			httpx.OkJsonCtx(r.Context(), w, errorx.NewDefaultError("Error"))
 		} else {
 			httpx.OkJsonCtx(r.Context(), w, errorx.NewSuccessJson(resp))
 		}
