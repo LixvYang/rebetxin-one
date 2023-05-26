@@ -1,0 +1,16 @@
+info(
+	title:
+	desc:
+	author:
+	email: @betxin.one
+	version: 1.0
+)
+
+import "./model.api"
+import "./category.api"
+import "./refund.api"
+import "./topic.api"
+import "./purchase.api"
+import "./collect.api"
+import "./user.api"
+import "./snapshot.api"

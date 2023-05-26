@@ -1,0 +1,53 @@
+info(
+	title:
+	desc:
+	author:
+	email: @betxin.one
+	version: 1.0
+)
+
+@server(
+	group: collect
+	prefix: /api/v1
+	jwt: Auth
+)
+service betxin-api {
+	@doc(
+		summary: get用户收藏
+	)
+	@handler ListTopicCollectHandler
+	get /collect returns([]Topiccollect)
+	
+	@doc(
+		summary: 创建用户收藏
+	)
+	@handler CreateTopicCollectHandler
+	post /collect (CreateTopicCollectReq)
+	
+	@doc(
+		summary: 删除用户收藏
+	)
+	@handler DeleteTopicCollectHandler
+	delete /collect (DeleteTopicCollectReq)
+}
+
+type Topiccollect {
+	Id     int64  `json:"id"`
+	Uid    string `json:"uid"`
+	Tid    string `json:"tid"`
+	Status int64  `json:"status"`
+	Topic  *GetTopicDataResp `json:"topic"`
+
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+} 
+
+type CreateTopicCollectReq {
+	Tid string `json:"tid"`
+
+}
+
+type DeleteTopicCollectReq {
+	Tid string `json:"tid"`
+}
+

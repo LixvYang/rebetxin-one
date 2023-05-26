@@ -1,0 +1,58 @@
+info(
+  title: 
+  desc: 
+  author: 
+  email: @betxin.one
+  version: 1.0
+)
+
+type Category {
+	Id           int64  `json:"id"`
+	CategoryName string `json:"category_name"`
+}
+
+// 定义没有jwt的category api
+@server(
+	group: category
+	prefix: /api/v1
+)
+service betxin-api {
+	@doc(
+		summary: 获取category列表
+	)
+	@handler ListCategoryHandler
+	get /category returns ([]Category)
+	
+	@doc(
+		summary: 根据id获取category
+	)
+	@handler GetCategoryHandler
+	get /category/:id (GetCategoryReq) returns (Category)
+}
+
+// 定义已经有jwt的category api
+@server(
+	group: category
+	prefix: /api/v1
+	jwt: Auth
+	middleware: Admin
+)
+service betxin-api {
+	@doc(
+		summary: 创建category
+	)
+	@handler CreateCategoryHandler
+	post /category (CreateCategoryReq) returns (CreateCategoryResp)
+}
+
+type CreateCategoryReq {
+	CategoryName string `json:"category_name"`
+}
+
+type CreateCategoryResp {
+	Data string `json:"data"`
+}
+
+type GetCategoryReq {
+	Id int64 `path:"id"`
+}
