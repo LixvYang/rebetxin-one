@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+option go_package ="./pb";
+
+package pb;
+
+// ------------------------------------ 
+// Messages
+// ------------------------------------ 
+message SendTransferReq {
+	string opponent_id = 1;
+	string asset_id = 2;
+	string amount = 3;
+	string memo = 4;
+}
+
+message SendTransferResp {
+}
+
+message SendMessageReq {
+	string content = 1;
+	string receipt_id = 2;
+}
+
+message SendMessageResp {
+}
+
+message SendCardReq {
+	string tid = 1;
+	string title = 2;
+	string intro = 3;
+	string icon_url = 4;
+	string receipt_id = 5;
+}
+
+message SendCardResp {
+}
+
+message SendBtnGroupReq {
+	string tid = 1;
+	string asset_id = 2;
+	string receipt_id = 3;
+}
+
+message SendBtnGroupResp {
+}
+
+// ------------------------------------ 
+// Rpc Func
+// ------------------------------------ 
+
+service mixinsrv { 
+
+	 //-----------------------mixinsrv----------------------- 
+	 rpc SendTransfer(SendTransferReq) returns (SendTransferResp);
+	 rpc SendCard(SendCardReq) returns (SendCardResp);
+	 rpc SendMessage(SendMessageReq) returns (SendMessageResp);
+	 rpc SendBtnGroup(SendBtnGroupReq) returns (SendBtnGroupResp);
+}
