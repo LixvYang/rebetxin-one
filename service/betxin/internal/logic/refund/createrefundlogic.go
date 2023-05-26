@@ -9,6 +9,7 @@ import (
 	"github.com/lixvyang/rebetxin-one/service/betxin/internal/svc"
 	"github.com/lixvyang/rebetxin-one/service/betxin/internal/types"
 	"github.com/lixvyang/rebetxin-one/service/betxin/model"
+	"github.com/lixvyang/rebetxin-one/service/mixinsrv/rpc/pb"
 	"github.com/shopspring/decimal"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -80,7 +81,14 @@ func (l *CreateRefundLogic) CreateRefund(req *types.CreateRefundReq) error {
 		return errorx.NewDefaultError("Error: refund.")
 	}
 	// 给用户转账
-	l.svcCtx.SendTransfer(l.ctx, uid, fmt.Sprintf("%s - 退款", topic.Title), constant.CNB_ASSET_ID, refundAmount)
+	// 转账逻辑
+	in := &pb.SendTransferReq{
+		OpponentId: uid,
+		AssetId:    constant.CNB_ASSET_ID,
+		Amount:     refundAmount.String(),
+		Memo:       fmt.Sprintf("%s - 退款奖励", topic.Title),
+	}
+	l.svcCtx.MixinSrvRPC.SendTransfer(l.ctx, in)
 
 	// 向其他用户转账
 	feeAmount := totalAmount.Mul(decimal.NewFromFloat(0.1))
@@ -95,13 +103,19 @@ func (l *CreateRefundLogic) CreateRefund(req *types.CreateRefundReq) error {
 		return nil
 	}
 
-	peerAmount := feeAmount.Div(decimal.NewFromInt(int64(len(tps) - 1)))
+	peerAmount := feeAmount.Div(decimal.NewFromInt(int64(len(tps) - 1))).String()
 	for i := 0; i < len(tps); i++ {
 		if tps[i].Uid == uid {
 			continue
 		}
 		// 转账逻辑
-		l.svcCtx.SendTransfer(l.ctx, tps[i].Uid, fmt.Sprintf("%s - 退款奖励", topic.Title), constant.CNB_ASSET_ID, peerAmount)
+		in := &pb.SendTransferReq{
+			OpponentId: tps[i].Uid,
+			AssetId:    constant.CNB_ASSET_ID,
+			Amount:     peerAmount,
+			Memo:       fmt.Sprintf("%s - 退款奖励", topic.Title),
+		}
+		l.svcCtx.MixinSrvRPC.SendTransfer(l.ctx, in)
 	}
 
 	return nil
