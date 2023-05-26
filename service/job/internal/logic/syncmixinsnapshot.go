@@ -10,7 +10,7 @@ import (
 	"github.com/hibiken/asynq"
 	"github.com/lixvyang/rebetxin-one/common/constant"
 	"github.com/lixvyang/rebetxin-one/common/errorx"
-	"github.com/lixvyang/rebetxin-one/model"
+	"github.com/lixvyang/rebetxin-one/service/betxin/model"
 	"github.com/lixvyang/rebetxin-one/service/job/internal/svc"
 	"github.com/shopspring/decimal"
 	"github.com/zeromicro/go-zero/core/logx"

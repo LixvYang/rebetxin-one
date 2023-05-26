@@ -35,7 +35,6 @@ func NewSendBtnGroupLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Send
 
 func (l *SendBtnGroupLogic) SendBtnGroup(in *pb.SendBtnGroupReq) (*pb.SendBtnGroupResp, error) {
 	l.SendButtonGroup(l.ctx, in.GetTid(), in.GetAssetId(), in.GetReceiptId())
-
 	return &pb.SendBtnGroupResp{}, nil
 }
 

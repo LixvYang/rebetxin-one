@@ -1,6 +1,0 @@
-
-type GetTopicDataResp {
-	Topic
-	IsCollect int64     `json:"is_collect,options=0|1"`
-	Category  *Category `json:"category"`
-}

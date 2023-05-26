@@ -3,7 +3,7 @@ package svc
 import (
 	"github.com/fox-one/mixin-sdk-go"
 	"github.com/hibiken/asynq"
-	"github.com/lixvyang/rebetxin-one/model"
+	"github.com/lixvyang/rebetxin-one/service/betxin/model"
 	"github.com/lixvyang/rebetxin-one/service/job/internal/config"
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
@@ -15,9 +15,9 @@ type ServiceContext struct {
 	AsynqClient *asynq.Client
 	MixinClient *mixin.Client
 
-	SnapshotModel model.SnapshotModel
+	SnapshotModel      model.SnapshotModel
 	TopicPurchaseModel model.TopicpurchaseModel
-	TopicModel model.TopicModel
+	TopicModel         model.TopicModel
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -36,12 +36,12 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	}
 
 	return &ServiceContext{
-		Config:        c,
-		AsynqServer:   newAsynqServer(c),
-		AsynqClient:   newAsynqClient(c),
-		MixinClient:   mixinClient,
-		SnapshotModel: model.NewSnapshotModel(conn, c.CacheRedis),
+		Config:             c,
+		AsynqServer:        newAsynqServer(c),
+		AsynqClient:        newAsynqClient(c),
+		MixinClient:        mixinClient,
+		SnapshotModel:      model.NewSnapshotModel(conn, c.CacheRedis),
 		TopicPurchaseModel: model.NewTopicpurchaseModel(conn, c.CacheRedis),
-		TopicModel: model.NewTopicModel(conn, c.CacheRedis),
+		TopicModel:         model.NewTopicModel(conn, c.CacheRedis),
 	}
 }
