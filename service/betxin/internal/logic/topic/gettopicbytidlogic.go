@@ -3,6 +3,7 @@ package topic
 import (
 	"context"
 
+	"github.com/lixvyang/rebetxin-one/common/convert"
 	"github.com/lixvyang/rebetxin-one/common/errorx"
 	"github.com/lixvyang/rebetxin-one/service/betxin/internal/svc"
 	"github.com/lixvyang/rebetxin-one/service/betxin/internal/types"
@@ -35,9 +36,9 @@ func (l *GetTopicByTidLogic) GetTopicByTid(req *types.GetTopicByTidReq) (resp *t
 	respData.Cid = topic.Cid
 	respData.CollectCount = topic.CollectCount
 	respData.Content = topic.Content
-	respData.CreatedAt = l.svcCtx.TimeToString(topic.CreatedAt)
-	respData.DeletedAt = l.svcCtx.TimeToString(topic.DeletedAt.Time)
-	respData.EndTime = l.svcCtx.TimeToString(topic.EndTime.Time)
+	respData.CreatedAt = convert.TimeToString(topic.CreatedAt)
+	respData.DeletedAt = convert.TimeToString(topic.DeletedAt.Time)
+	respData.EndTime = convert.TimeToString(topic.EndTime.Time)
 	respData.Id = topic.Id
 	respData.ImgUrl = topic.ImgUrl
 	respData.Intro = topic.Intro

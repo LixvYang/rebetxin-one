@@ -5,6 +5,7 @@ import (
 	"database/sql"
 
 	"github.com/gofrs/uuid"
+	"github.com/lixvyang/rebetxin-one/common/convert"
 	"github.com/lixvyang/rebetxin-one/common/errorx"
 	"github.com/lixvyang/rebetxin-one/service/betxin/internal/svc"
 	"github.com/lixvyang/rebetxin-one/service/betxin/internal/types"
@@ -51,8 +52,8 @@ func (l *CreateTopicLogic) createTopicPrepare(req *types.CreateTopicReq) (resp *
 		Intro:         req.Intro,
 		Content:       req.Content,
 		ImgUrl:        req.ImgUrl,
-		RefundEndTime: sql.NullTime{Valid: true, Time: l.svcCtx.StringToTime(req.RefundEndTime)},
-		EndTime:       sql.NullTime{Valid: true, Time: l.svcCtx.StringToTime(req.EndTime)},
+		RefundEndTime: sql.NullTime{Valid: true, Time: convert.StringToTime(req.RefundEndTime)},
+		EndTime:       sql.NullTime{Valid: true, Time: convert.StringToTime(req.EndTime)},
 	}
 	resp.YesRatio, _ = decimal.NewFromString("50.00")
 	resp.NoRatio, _ = decimal.NewFromString("50.00")

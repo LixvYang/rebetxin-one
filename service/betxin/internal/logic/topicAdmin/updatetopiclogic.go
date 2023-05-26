@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/lixvyang/rebetxin-one/common/convert"
 	"github.com/lixvyang/rebetxin-one/common/errorx"
 	"github.com/lixvyang/rebetxin-one/service/betxin/internal/svc"
 	"github.com/lixvyang/rebetxin-one/service/betxin/internal/types"
@@ -36,10 +37,10 @@ func (l *UpdateTopicLogic) UpdateTopic(req *types.UpdateTopicReq) error {
 	topic.Title = req.Title
 	topic.Content = req.Content
 	topic.ImgUrl = req.ImgUrl
-	topic.EndTime = sql.NullTime{Valid: true, Time: l.svcCtx.StringToTime(req.EndTime)}
+	topic.EndTime = sql.NullTime{Valid: true, Time: convert.StringToTime(req.EndTime)}
 	topic.Intro = req.Intro
 	topic.IsStop = req.IsStop
-	topic.RefundEndTime = sql.NullTime{Valid: true, Time: l.svcCtx.StringToTime(req.RefundEndTime)}
+	topic.RefundEndTime = sql.NullTime{Valid: true, Time: convert.StringToTime(req.RefundEndTime)}
 
 	err = l.svcCtx.TopicModel.Update(l.ctx, topic)
 	if err != nil {
