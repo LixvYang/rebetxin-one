@@ -1,6 +1,6 @@
-CREATE DATABASE IF NOT EXISTS betxin;
+CREATE DATABASE IF NOT EXISTS rebetxin;
 
-use betxin;
+use rebetxin;
 
 CREATE TABLE
     IF NOT EXISTS `topic` (
@@ -17,7 +17,7 @@ CREATE TABLE
         `total_price` DECIMAL(32, 8) NOT NULL DEFAULT '0.00000000',
         `collect_count` BIGINT(20) UNSIGNED NOT NULL DEFAULT 0,
         `read_count` BIGINT(20) UNSIGNED NOT NULL DEFAULT 0,
-        `img_url` VARCHAR(255) NOT NULL DEFAULT '',
+        `img_url` TEXT NOT NULL,
         `is_stop` TINYINT UNSIGNED NOT NULL DEFAULT '0',
         `refund_end_time` TIMESTAMP DEFAULT NULL,
         `end_time` TIMESTAMP DEFAULT NULL,

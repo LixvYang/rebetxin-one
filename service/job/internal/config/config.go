@@ -4,14 +4,15 @@ import (
 	"github.com/zeromicro/go-zero/core/service"
 	"github.com/zeromicro/go-zero/core/stores/cache"
 	"github.com/zeromicro/go-zero/core/stores/redis"
+	"github.com/zeromicro/go-zero/zrpc"
 )
 
 type Config struct {
 	service.ServiceConf
-	Redis      redis.RedisConf
-	
+	Redis redis.RedisConf
+
 	CacheRedis cache.CacheConf
-	Mysql struct {
+	Mysql      struct {
 		DNS string
 	}
 
@@ -23,4 +24,6 @@ type Config struct {
 		PrivateKey string
 		AppSecret  string
 	}
+
+	MixinSrvRPC zrpc.RpcClientConf
 }

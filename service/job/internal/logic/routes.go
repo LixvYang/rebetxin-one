@@ -29,7 +29,8 @@ func NewCronJob(ctx context.Context, svcCtx *svc.ServiceContext) *CronJob {
 
 // register job
 func (l *CronJob) Register() *asynq.ServeMux {
-	go l.InitCron()
+	go l.HandleSyncSnapshot()
+	go l.HandleTopicStop()
 
 	mux := asynq.NewServeMux()
 
@@ -77,11 +78,9 @@ func getTopHundredCreated(client *mixin.Client, c context.Context) ([]*mixin.Sna
 	return snapshots, nil
 }
 
-func (l *CronJob) InitCron() {
+func (l *CronJob) HandleSyncSnapshot() {
 	ctx := context.Background()
-	createdAt, err := getLastedSnapshot(l.svcCtx.MixinClient, ctx)
-	if err != nil {
-	}
+	createdAt, _ := getLastedSnapshot(l.svcCtx.MixinClient, ctx)
 	stats := &Stats{createdAt}
 
 	for {
@@ -107,6 +106,20 @@ func (l *CronJob) InitCron() {
 			}
 		}
 		time.Sleep(3 * time.Second)
+	}
+}
+
+func (l *CronJob) HandleTopicStop() {
+	topics, _ := l.svcCtx.TopicModel.ListNotStop(l.ctx)
+	ticker := time.NewTicker(time.Hour)
+	for range ticker.C {
+		for _, topic := range topics {
+			if !topic.EndTime.Time.After(time.Now()) {
+				continue
+			}
+			topic.IsStop = 1
+			l.svcCtx.TopicModel.Update(l.ctx, topic)
+		}
 	}
 }
 

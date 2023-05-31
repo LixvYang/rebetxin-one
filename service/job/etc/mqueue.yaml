@@ -1,12 +1,12 @@
 Name: mqueue-job
 Host: 0.0.0.0
-Port: 3002
+Port: 8890
 Log:
   ServiceName: mqueue-job
   Level: error
 
 Mysql:
-  DNS: root:123456@tcp(127.0.0.1:3306)/betxin?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
+  DNS: root:123456@tcp(127.0.0.1:3306)/rebetxin?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
 
 Redis:
   Host: 127.0.0.1:6379
@@ -23,3 +23,7 @@ Mixin:
   PinToken: "--466fC5f9_qH4R63XeavkJrs7pPmwJMH2qp4hBfFDg"
   PrivateKey: "RRH17kF1Y4RBhmZarmkN7ApPV4CitirhglN5hoL8d3_2p474Upqz_1Zpu7pfb3MV2vcehoE6o5pPpb3zDtRZPQ"
   AppSecret: "3393cf8cd5350921ddfacbcf7600b2538f99cbfa9dd32eccfd759bc6076f7e97"
+
+MixinSrvRPC:
+  Endpoints: 
+    - localhost:8889 

@@ -1,5 +1,5 @@
 Name: mixinsrv.rpc
-ListenOn: 0.0.0.0:8899
+ListenOn: 0.0.0.0:8889
 
 Mixin:
   Pin: "598823"

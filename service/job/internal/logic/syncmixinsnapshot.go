@@ -29,14 +29,7 @@ func NewSyncMixinSnapshotHandler(ctx context.Context, svcCtx *svc.ServiceContext
 	}
 }
 
-// func (l *MixinSnapshotHandler) ProcessTask(ctx context.Context, t *asynq.Task) error {
-// 	fmt.Println("ProcessTask")
-
-// 	return nil
-// }
-
 func (l *MixinSnapshotHandler) ProcessTask(ctx context.Context, t *asynq.Task) error {
-	fmt.Println("ProcessTask")
 	var snapshot mixin.Snapshot
 	sp := new(model.Snapshot)
 	if err := json.Unmarshal(t.Payload(), &snapshot); err != nil {
@@ -114,10 +107,14 @@ func (l *MixinSnapshotHandler) ProcessTask(ctx context.Context, t *asynq.Task) e
 	userPurchase, err = l.svcCtx.TopicPurchaseModel.FindOneByUidTid(l.ctx, sp.Uid, sp.Tid)
 	if err != nil {
 		if err == model.ErrNotFound {
-			l.svcCtx.TopicPurchaseModel.Insert(l.ctx, &model.Topicpurchase{
+			_, err = l.svcCtx.TopicPurchaseModel.Insert(l.ctx, &model.Topicpurchase{
 				Uid: sp.Uid,
 				Tid: sp.Tid,
 			})
+			if err != nil {
+				logx.Errorw("TopicPurchaseModel.Insert", logx.LogField{Key: "Error", Value: err.Error()})
+				return errorx.NewDefaultError("TopicPurchaseModel.Insert")
+			}
 			userPurchase, _ = l.svcCtx.TopicPurchaseModel.FindOneByUidTid(l.ctx, sp.Uid, sp.Tid)
 		} else {
 			logx.Errorw("TopicPurchaseModel.FindOneByUidTid", logx.LogField{Key: "Error", Value: err.Error()})
