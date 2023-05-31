@@ -22,9 +22,9 @@ func CreateRefundHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 		l := refund.NewCreateRefundLogic(r.Context(), svcCtx)
 		err := l.CreateRefund(&req)
 		if err != nil {
-			httpx.ErrorCtx(r.Context(), w, err)
+			httpx.ErrorCtx(r.Context(), w, errorx.NewDefaultError("Error"))
 		} else {
-			httpx.Ok(w)
+			httpx.OkJson(w, errorx.NewSuccessJson("Success"))
 		}
 	}
 }

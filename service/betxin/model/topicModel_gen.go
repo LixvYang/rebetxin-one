@@ -41,6 +41,7 @@ type (
 		Delete(ctx context.Context, id int64) error
 		ListByCid(ctx context.Context, cid int64, preId int64, pageSize int64) ([]*Topic, error)
 		Search(ctx context.Context, title, intro, content string) ([]*Topic, error)
+		ListNotStop(ctx context.Context) ([]*Topic, error)
 	}
 
 	defaultTopicModel struct {
@@ -158,6 +159,22 @@ func (m *defaultTopicModel) ListByCid(ctx context.Context, cid int64, preId int6
 	query := fmt.Sprintf("SELECT %s FROM %s WHERE (id <= ? AND cid = ?) AND %s.`deleted_at` IS NULL ORDER BY id desc LIMIT ?", topicRows, m.table, m.table)
 
 	err = m.QueryRowsNoCacheCtx(ctx, &resp, query, preId, cid, pageSize)
+	switch err {
+	case nil:
+		return resp, nil
+	case sqlx.ErrNotFound:
+		return nil, ErrNotFound
+	default:
+		return nil, err
+	}
+}
+
+func (m *defaultTopicModel) ListNotStop(ctx context.Context) ([]*Topic, error) {
+	var resp []*Topic
+	var err error
+	query := fmt.Sprintf("SELECT %s FROM %s WHERE is_stop != ?  AND %s.`deleted_at` IS NULL ORDER BY id desc", topicRows, m.table, m.table)
+
+	err = m.QueryRowsNoCacheCtx(ctx, &resp, query, 1)
 	switch err {
 	case nil:
 		return resp, nil

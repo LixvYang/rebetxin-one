@@ -75,7 +75,7 @@ func (l *CreateRefundLogic) CreateRefund(req *types.CreateRefundReq) error {
 		}
 	}
 
-	err = l.HandleRefundLogic(req.Select, userPurchase, topic, totalAmount)
+	err = l.HandleRefundLogic(req.Select, userPurchase, topic, refundAmount)
 	if err != nil {
 		logx.Errorw("HandleRefundLogic Error", logx.LogField{Key: "Error: ", Value: err.Error()})
 		return errorx.NewDefaultError("Error: refund.")
@@ -86,7 +86,7 @@ func (l *CreateRefundLogic) CreateRefund(req *types.CreateRefundReq) error {
 		OpponentId: uid,
 		AssetId:    constant.CNB_ASSET_ID,
 		Amount:     refundAmount.String(),
-		Memo:       fmt.Sprintf("%s - 退款奖励", topic.Title),
+		Memo:       fmt.Sprintf("%s - 退款", topic.Title),
 	}
 	l.svcCtx.MixinSrvRPC.SendTransfer(l.ctx, in)
 
@@ -121,21 +121,22 @@ func (l *CreateRefundLogic) CreateRefund(req *types.CreateRefundReq) error {
 	return nil
 }
 
-func (l *CreateRefundLogic) HandleRefundLogic(Select int64, userPurchase *model.Topicpurchase, topic *model.Topic, totalAmount decimal.Decimal) error {
+func (l *CreateRefundLogic) HandleRefundLogic(Select int64, userPurchase *model.Topicpurchase, topic *model.Topic, refundAmount decimal.Decimal) error {
 	switch Select {
 	case 0:
 		// 更新用户购买系统逻辑
-		userPurchase.YesPrice = userPurchase.YesPrice.Sub(totalAmount)
+		userPurchase.YesPrice = userPurchase.YesPrice.Sub(refundAmount)
 		err := l.svcCtx.TopicPurchaseModel.Update(l.ctx, userPurchase)
 		if err != nil {
 			logx.Errorw("TopicPurchaseModel.Update", logx.LogField{Key: "Error: ", Value: err.Error()})
 			return errorx.NewDefaultError("TopicPurchaseModel.Update Error!")
 		}
 		// 更新话题逻辑
-		topic.YesPrice = topic.YesPrice.Sub(totalAmount)
-		topic.TotalPrice = topic.TotalPrice.Sub(totalAmount)
+		topic.YesPrice = topic.YesPrice.Sub(refundAmount)
+		topic.TotalPrice = topic.TotalPrice.Sub(refundAmount)
 		topic.YesRatio = topic.YesPrice.Div(topic.TotalPrice).Mul(decimal.NewFromInt(100))
 		topic.NoRatio = topic.NoPrice.Div(topic.TotalPrice).Mul(decimal.NewFromInt(100))
+		fmt.Println("topicModel: ", topic)
 		err = l.svcCtx.TopicModel.Update(l.ctx, topic)
 		if err != nil {
 			logx.Errorw("TopicModel.Update", logx.LogField{Key: "Error: ", Value: err.Error()})
@@ -143,16 +144,17 @@ func (l *CreateRefundLogic) HandleRefundLogic(Select int64, userPurchase *model.
 		}
 	case 1:
 		// 更新用户购买系统逻辑
-		userPurchase.NoPrice = userPurchase.NoPrice.Sub(totalAmount)
+		userPurchase.NoPrice = userPurchase.NoPrice.Sub(refundAmount)
 		err := l.svcCtx.TopicPurchaseModel.Update(l.ctx, userPurchase)
 		if err != nil {
 			logx.Errorw("TopicPurchaseModel.Update", logx.LogField{Key: "Error: ", Value: err.Error()})
 			return errorx.NewDefaultError("TopicPurchaseModel.Update Error!")
 		}
-		topic.NoPrice = topic.NoPrice.Sub(totalAmount)
-		topic.TotalPrice = topic.TotalPrice.Sub(totalAmount)
+		topic.NoPrice = topic.NoPrice.Sub(refundAmount)
+		topic.TotalPrice = topic.TotalPrice.Sub(refundAmount)
 		topic.YesRatio = topic.YesPrice.Div(topic.TotalPrice).Mul(decimal.NewFromInt(100))
 		topic.NoRatio = topic.NoPrice.Div(topic.TotalPrice).Mul(decimal.NewFromInt(100))
+		fmt.Printf("topicModel: %+v", topic)
 		err = l.svcCtx.TopicModel.Update(l.ctx, topic)
 		if err != nil {
 			logx.Errorw("TopicModel.Update", logx.LogField{Key: "Error: ", Value: err.Error()})

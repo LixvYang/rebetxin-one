@@ -85,7 +85,8 @@ type DeleteTopicReq struct {
 }
 
 type StopTopicReq struct {
-	Tid string `json:"tid"`
+	Tid string `path:"tid"`
+	WhichWin int64 `json:"which_win"`
 }
 
 type UpdateTopicReq struct {

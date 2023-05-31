@@ -5,16 +5,19 @@ import (
 )
 
 type AdminMiddleware struct {
+	xid string
 }
 
-func NewAdminMiddleware() *AdminMiddleware {
-	return &AdminMiddleware{}
+func NewAdminMiddleware(xid string) *AdminMiddleware {
+	return &AdminMiddleware{
+		xid: xid,
+	}
 }
 
 func (m *AdminMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		xid := r.Header.Get("xid")
-		if xid != "123456" {
+		if xid != m.xid {
 			return
 		}
 		next(w, r)

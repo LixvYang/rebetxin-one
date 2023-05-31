@@ -2,7 +2,6 @@ package svc
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/lixvyang/rebetxin-one/service/betxin/internal/config"
@@ -41,7 +40,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	conn := sqlx.NewMysql(c.Mysql.DNS)
 	svc := new(ServiceContext)
 	svc.Config = c
-	svc.Admin = middleware.NewAdminMiddleware().Handle
+	svc.Admin = middleware.NewAdminMiddleware(c.AdminHeader.Xid).Handle
 	svc.CategoryModel = model.NewCategoryModel(conn, c.CacheRedis)
 	svc.RefundModel = model.NewRefundModel(conn, c.CacheRedis)
 	svc.TopicModel = model.NewTopicModel(conn, c.CacheRedis)
@@ -70,8 +69,6 @@ func NewServiceContext(c config.Config) *ServiceContext {
 
 	svc.TopicCollectMap = topicCollectMap
 	svc.CategoryMap = categoryMap
-
-	fmt.Println(c.MixinSrvRPC)
 	svc.MixinSrvRPC = mixinsrv.NewMixinsrv(zrpc.MustNewClient(c.MixinSrvRPC))
 	return svc
 }

@@ -47,7 +47,6 @@ type (
 		Id        int64        `db:"id"`
 		Uid       string       `db:"uid"`
 		Tid       string       `db:"tid"`
-		TraceId   string       `db:"trace_id"`
 		YesPrice  decimal.Decimal      `db:"yes_price"`
 		NoPrice   decimal.Decimal      `db:"no_price"`
 		CreatedAt time.Time    `db:"created_at"`
@@ -119,8 +118,8 @@ func (m *defaultTopicpurchaseModel) Insert(ctx context.Context, data *Topicpurch
 	betxinTopicpurchaseIdKey := fmt.Sprintf("%s%v", cacheBetxinTopicpurchaseIdPrefix, data.Id)
 	betxinTopicpurchaseUidTidKey := fmt.Sprintf("%s%v:%v", cacheBetxinTopicpurchaseUidTidPrefix, data.Uid, data.Tid)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?)", m.table, topicpurchaseRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.Uid, data.Tid, data.TraceId, data.YesPrice, data.NoPrice, data.DeletedAt)
+		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?)", m.table, topicpurchaseRowsExpectAutoSet)
+		return conn.ExecCtx(ctx, query, data.Uid, data.Tid, data.YesPrice, data.NoPrice, data.DeletedAt)
 	}, betxinTopicpurchaseIdKey, betxinTopicpurchaseUidTidKey)
 	return ret, err
 }
@@ -135,7 +134,7 @@ func (m *defaultTopicpurchaseModel) Update(ctx context.Context, newData *Topicpu
 	betxinTopicpurchaseUidTidKey := fmt.Sprintf("%s%v:%v", cacheBetxinTopicpurchaseUidTidPrefix, data.Uid, data.Tid)
 	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, topicpurchaseRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, newData.Uid, newData.Tid, newData.TraceId, newData.YesPrice, newData.NoPrice, newData.DeletedAt, newData.Id)
+		return conn.ExecCtx(ctx, query, newData.Uid, newData.Tid, newData.YesPrice, newData.NoPrice, newData.DeletedAt, newData.Id)
 	}, betxinTopicpurchaseIdKey, betxinTopicpurchaseUidTidKey)
 	return err
 }
